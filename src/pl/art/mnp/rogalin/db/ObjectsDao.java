@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import pl.art.mnp.rogalin.model.Photo;
 import pl.art.mnp.rogalin.ui.field.UiField;
 import pl.art.mnp.rogalin.ui.tab.object.UploadedImage;
 
@@ -54,5 +55,9 @@ public class ObjectsDao {
 
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.insert(object);
+	}
+	
+	public List<Photo> getPhotos(DBObject object) {
+		return null;
 	}
 }

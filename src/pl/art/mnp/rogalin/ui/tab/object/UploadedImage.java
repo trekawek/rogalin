@@ -111,7 +111,7 @@ public class UploadedImage implements Serializable {
 		inputFile.save();
 
 		object.put("file", inputFile);
-		object.put("type", typeSelection.getValue().toString());
+		object.put("type", ((PhotoType) typeSelection.getValue()).name());
 		return object;
 	}
 }

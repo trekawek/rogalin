@@ -72,7 +72,7 @@ public class ObjectListTab extends HorizontalLayout implements ItemClickListener
 		Object itemId = event.getItemId();
 		DBObject dbObject = dbProvider.getObjectsProvider().getObject(itemId);
 
-		Window w = new Window("Podgląd obiektu", new ObjectPreview(dbObject));
+		Window w = new Window("Podgląd obiektu", new ObjectPreview(dbObject, dbProvider.getObjectsProvider()));
 		w.setPositionX(50);
 		w.setPositionY(50);
 

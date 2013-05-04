@@ -1,5 +1,7 @@
 package pl.art.mnp.rogalin.ui.tab.list;
 
+import pl.art.mnp.rogalin.db.MongoDbProvider;
+import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.model.Field;
 
 import com.mongodb.DBObject;
@@ -11,7 +13,11 @@ import com.vaadin.ui.Layout;
 @SuppressWarnings("serial")
 public class ObjectPreview extends FormLayout {
 
-	public ObjectPreview(DBObject dbObject) {
+	private final ObjectsDao objectProvider;
+
+	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider) {
+		super();
+		this.objectProvider = objectProvider;
 		setMargin(true);
 		setSpacing(true);
 
@@ -42,5 +48,13 @@ public class ObjectPreview extends FormLayout {
 			field.setValue(f.getStringValue(dbObject));
 			container.addComponent(field);
 		}
+
+		GridLayout photos = new GridLayout(4, 1);
+		photos.setSpacing(true);
+		addPhotos(photos, dbObject);
+	}
+
+	private void addPhotos(GridLayout photos, DBObject dbObject) {
+		
 	}
 }
