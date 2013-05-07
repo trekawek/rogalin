@@ -8,22 +8,20 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
+import com.vaadin.server.StreamResource.StreamSource;
 
 import pl.art.mnp.rogalin.ui.tab.object.PhotoType;
 
-public class Photo {
+@SuppressWarnings("serial")
+public class Photo implements StreamSource {
 
 	private final GridFSDBFile file;
 
 	private final PhotoType type;
 
 	public Photo(DBObject photo, GridFS gridFS) {
-		ObjectId objectId = (ObjectId) photo.get("_id");
-
-		DBObject ref = new BasicDBObject();
-		ref.put("_id", objectId);
-
-		file = gridFS.findOne(ref);
+		ObjectId objectId = (ObjectId) photo.get("file_id");
+		file = gridFS.findOne(new BasicDBObject("_id", objectId));
 		type = PhotoType.valueOf((String) photo.get("type"));
 	}
 
@@ -33,10 +31,6 @@ public class Photo {
 
 	public String getName() {
 		return file.getFilename();
-	}
-
-	public String getMimeType() {
-		return file.getContentType();
 	}
 
 	public PhotoType getType() {

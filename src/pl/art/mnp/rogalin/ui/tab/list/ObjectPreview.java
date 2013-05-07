@@ -1,25 +1,29 @@
 package pl.art.mnp.rogalin.ui.tab.list;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.Photo;
 
 import com.mongodb.DBObject;
+import com.vaadin.server.StreamResource;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
+import com.vaadin.ui.Link;
+import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class ObjectPreview extends FormLayout {
+public class ObjectPreview extends VerticalLayout {
 
-	private final ObjectsDao objectProvider;
-
-	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider) {
+	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider, ClickListener clickListener) {
 		super();
-		this.objectProvider = objectProvider;
-		setMargin(true);
-		setSpacing(true);
+		Button back = new Button("Powrót do listy");
+		back.addClickListener(clickListener);
+		addComponent(back);
 
 		GridLayout columns = new GridLayout(2, 1);
 		columns.setSpacing(true);
@@ -51,10 +55,21 @@ public class ObjectPreview extends FormLayout {
 
 		GridLayout photos = new GridLayout(4, 1);
 		photos.setSpacing(true);
-		addPhotos(photos, dbObject);
+		for (Photo p : objectProvider.getPhotos(dbObject)) {
+			photos.addComponent(renderPhoto(p));
+		}
+		addComponent(photos);
 	}
 
-	private void addPhotos(GridLayout photos, DBObject dbObject) {
-		
+	private Layout renderPhoto(Photo p) {
+		Layout layout = new VerticalLayout();
+		StreamResource source = new StreamResource(p, p.getName());
+		Image image = new Image(p.getName(), source);
+		image.setWidth("150px");
+		layout.addComponent(image);
+		Link link = new Link("Pełny rozmiar", source);
+		link.setTargetName("_blank");
+		layout.addComponent(link);
+		return layout;
 	}
 }

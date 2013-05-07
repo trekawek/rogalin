@@ -30,28 +30,31 @@ public abstract class AbstractUiField implements UiField, Serializable {
 		return field;
 	}
 
-	@Override
-	public Object serializeToMongo() {
+	@SuppressWarnings("rawtypes")
+	private AbstractField getAbstractField() {
 		Component component = getComponent();
 		if (component instanceof AbstractField) {
-			@SuppressWarnings("rawtypes")
-			AbstractField field = (AbstractField) component;
-			return field.getValue();
+			return (AbstractField) component;
 		} else {
 			throw new UnsupportedOperationException();
 		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void clear() {
+		getAbstractField().setValue(null);
+	}
+
+	@Override
+	public Object serializeToMongo() {
+		return getAbstractField().getValue();
 	}
 
 	@Override
 	public void validate() {
-		Component component = getComponent();
-		if (component instanceof AbstractField) {
-			@SuppressWarnings("rawtypes")
-			AbstractField field = (AbstractField) component;
-			field.validate();
-		} else {
-			throw new UnsupportedOperationException();
-		}
+		getAbstractField().validate();
 	}
 
 	@Override

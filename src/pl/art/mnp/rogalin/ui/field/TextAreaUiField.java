@@ -23,4 +23,9 @@ public class TextAreaUiField extends AbstractUiField {
 	public TextArea getComponent() {
 		return textArea;
 	}
+
+	@Override
+	public void clear() {
+		textArea.setValue("");
+	}
 }

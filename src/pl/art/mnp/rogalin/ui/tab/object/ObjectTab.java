@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import pl.art.mnp.rogalin.TabsController;
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.model.Field;
 import pl.art.mnp.rogalin.ui.field.UiField;
@@ -25,7 +26,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Upload.FailedEvent;
@@ -49,14 +49,14 @@ public class ObjectTab extends VerticalLayout implements Receiver, FinishedListe
 	private final Map<Field, Label> errorLabels = new EnumMap<Field, Label>(Field.class);
 
 	private final MongoDbProvider dbProvider;
-	
-	private final TabSheet tabs;
+
+	private final TabsController tabs;
 
 	private GridLayout imageContainer;
 
 	private Label imageLabel;
 
-	public ObjectTab(MongoDbProvider dbProvider, TabSheet tabs) {
+	public ObjectTab(MongoDbProvider dbProvider, TabsController tabs) {
 		super();
 		this.dbProvider = dbProvider;
 		this.tabs = tabs;
@@ -143,10 +143,15 @@ public class ObjectTab extends VerticalLayout implements Receiver, FinishedListe
 		if (validated) {
 			dbProvider.getObjectsProvider().addNewObject(fields, images.values());
 			Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
+			tabs.switchToListTab(true);
+			for(UiField field : fields) {
+				field.clear();
+				images.clear();
+				updateImages();
+			}
 		} else {
 			Notification.show("Uzupełnij wszystkie wymagane pola.", Type.ERROR_MESSAGE);
 		}
-		tabs.setSelectedTab(0);
 	}
 
 	private void updateImages() {

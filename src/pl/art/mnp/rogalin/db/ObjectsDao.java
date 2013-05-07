@@ -1,6 +1,8 @@
 package pl.art.mnp.rogalin.db;
 
 import java.io.FileNotFoundException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -14,8 +16,10 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.gridfs.GridFS;
 
-public class ObjectsDao {
+@SuppressWarnings("serial")
+public class ObjectsDao implements Serializable {
 	private static final Logger LOG = Logger.getLogger(ObjectsDao.class.getName());
 
 	private static final String OBJECTS = "objects";
@@ -56,8 +60,24 @@ public class ObjectsDao {
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.insert(object);
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public void removeObject(DBObject object) {
+		GridFS gridFs = dbProvider.getGridFS();
+		for (DBObject photo : (List<DBObject>) object.get("photos")) {
+			gridFs.remove(new BasicDBObject("_id", photo.get("file_id")));
+		}
+		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
+		collection.remove(new BasicDBObject("_id", object.get("_id")));
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<Photo> getPhotos(DBObject object) {
-		return null;
+		GridFS gridFs = dbProvider.getGridFS();
+		List<Photo> photos = new ArrayList<Photo>();
+		for (DBObject photo : (List<DBObject>) object.get("photos")) {
+			photos.add(new Photo(photo, gridFs));
+		}
+		return photos;
 	}
 }

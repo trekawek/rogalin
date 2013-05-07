@@ -6,57 +6,107 @@ import java.util.List;
 import java.util.Set;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
+import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.model.Field;
 
 import com.mongodb.DBObject;
-import com.vaadin.event.ItemClickEvent;
-import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.Window;
+import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
 @SuppressWarnings("serial")
-public class ObjectListTab extends HorizontalLayout implements ItemClickListener {
+public class ObjectListTab extends VerticalLayout {
 
 	private static final Set<Field> VISIBLE_COLUMNS = EnumSet.of(Field.IDENTIFIER, Field.NAME, Field.TYPE,
 			Field.EVALUATION_DATE);
 
-	private final MongoDbProvider dbProvider;
+	private final VerticalLayout layout;
+
+	private final ObjectsDao objectDao;
+
+	private Table table;
 
 	public ObjectListTab(MongoDbProvider dbProvider) {
 		super();
-		this.dbProvider = dbProvider;
+		this.objectDao = dbProvider.getObjectsProvider();
 
 		setMargin(true);
 		setSpacing(true);
 		setWidth("100%");
 
-		Table table = createTable();
-		addComponent(table);
+		layout = new VerticalLayout();
+		layout.addComponent(renderButtons());
+		layout.addComponent(renderTable());
+		addComponent(layout);
 	}
 
-	private Table createTable() {
-		Table t = new Table();
-		t.setWidth("100%");
-		t.setStyleName(Runo.TABLE_SMALL);
-		t.setSelectable(true);
-		t.setColumnCollapsingAllowed(true);
-		t.setColumnReorderingAllowed(true);
-		t.setImmediate(true);
+	private HorizontalLayout renderButtons() {
+		HorizontalLayout buttons = new HorizontalLayout();
+		buttons.setSpacing(true);
+		Button previewButton = new Button("Zobacz");
+		previewButton.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				showPreview();
+			}
+		});
+		Button editButton = new Button("Edytuj");
+		editButton.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+			}
+		});
+		Button removeButton = new Button("Usuń");
+		removeButton.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				remove();
+			}
+		});
+		buttons.addComponents(previewButton, editButton, removeButton);
+		buttons.setMargin(new MarginInfo(false, false, true, false));
+		return buttons;
+	}
+
+	protected void remove() {
+		DBObject selected = getSelectedObject();
+		if (selected != null) {
+			objectDao.removeObject(selected);
+			refreshTable();
+		}
+	}
+
+	private Table renderTable() {
+		table = new Table();
+		table.setWidth("100%");
+		table.setStyleName(Runo.TABLE_SMALL);
+		table.setSelectable(true);
+		table.setColumnCollapsingAllowed(true);
+		table.setColumnReorderingAllowed(true);
+		table.setImmediate(true);
+		table.setMultiSelect(false);
 		for (Field f : Field.values()) {
-			t.addContainerProperty(f, String.class, "-");
-			t.setColumnCollapsed(f, !VISIBLE_COLUMNS.contains(f));
+			table.addContainerProperty(f, String.class, "-");
+			table.setColumnCollapsed(f, !VISIBLE_COLUMNS.contains(f));
 		}
 
-		List<DBObject> objects = dbProvider.getObjectsProvider().getObjectList();
+		refreshTable();
+		return table;
+	}
+
+	public void refreshTable() {
+		table.removeAllItems();
+		List<DBObject> objects = objectDao.getObjectList();
 		for (DBObject o : objects) {
-			t.addItem(createTableRow(o), o.get("_id"));
+			table.addItem(createTableRow(o), o.get("_id"));
 		}
-
-		t.addItemClickListener(this);
-		return t;
 	}
 
 	private Object[] createTableRow(DBObject dbObject) {
@@ -67,15 +117,30 @@ public class ObjectListTab extends HorizontalLayout implements ItemClickListener
 		return properties.toArray();
 	}
 
-	@Override
-	public void itemClick(ItemClickEvent event) {
-		Object itemId = event.getItemId();
-		DBObject dbObject = dbProvider.getObjectsProvider().getObject(itemId);
-
-		Window w = new Window("Podgląd obiektu", new ObjectPreview(dbObject, dbProvider.getObjectsProvider()));
-		w.setPositionX(50);
-		w.setPositionY(50);
-
-		UI.getCurrent().addWindow(w);
+	private void showPreview() {
+		DBObject object = getSelectedObject();
+		if (object == null) {
+			return;
+		}
+		ObjectPreview preview = new ObjectPreview(object, objectDao, showTable);
+		removeAllComponents();
+		addComponent(preview);
 	}
+
+	private DBObject getSelectedObject() {
+		Object itemId = table.getValue();
+		if (itemId == null) {
+			Notification.show("Nie wybrano obiektu", Type.ERROR_MESSAGE);
+			return null;
+		}
+		return objectDao.getObject(itemId);
+	}
+
+	private final ClickListener showTable = new ClickListener() {
+		@Override
+		public void buttonClick(ClickEvent event) {
+			removeAllComponents();
+			addComponent(layout);
+		}
+	};
 }

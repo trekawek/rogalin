@@ -22,4 +22,9 @@ public class TextUiField extends AbstractUiField {
 	public TextField getComponent() {
 		return textField;
 	}
+
+	@Override
+	public void clear() {
+		textField.setValue("");
+	}
 }

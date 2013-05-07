@@ -17,4 +17,6 @@ public interface UiField {
 	void validate();
 
 	String getStringValue(DBObject o);
+
+	void clear();
 }

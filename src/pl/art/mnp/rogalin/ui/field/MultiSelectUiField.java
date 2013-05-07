@@ -1,5 +1,6 @@
 package pl.art.mnp.rogalin.ui.field;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -86,5 +87,12 @@ public class MultiSelectUiField extends AbstractUiField {
 		if (otherBox.getValue()) {
 			other.validate();
 		}
+	}
+
+	@Override
+	public void clear() {
+		optionGroup.setValue(Collections.emptySet());
+		otherBox.setValue(false);
+		other.setValue("");
 	}
 }

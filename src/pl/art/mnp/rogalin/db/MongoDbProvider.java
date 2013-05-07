@@ -37,7 +37,7 @@ public class MongoDbProvider implements Serializable {
 	}
 
 	public OptionsDao getOptionsProvider() {
-		return new OptionsDao(mongoDb);
+		return new OptionsDao(this);
 	}
 
 	public ObjectsDao getObjectsProvider() {

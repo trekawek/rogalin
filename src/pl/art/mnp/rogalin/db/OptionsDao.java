@@ -1,25 +1,26 @@
 package pl.art.mnp.rogalin.db;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
 import pl.art.mnp.rogalin.model.Field;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
-public class OptionsDao {
-	private final DB mongoDb;
+@SuppressWarnings("serial")
+public class OptionsDao implements Serializable {
+	private final MongoDbProvider dbProvider;
 
-	OptionsDao(DB mongoDb) {
-		this.mongoDb = mongoDb;
+	OptionsDao(MongoDbProvider dbProvider) {
+		this.dbProvider = dbProvider;
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<String> getOptions(Field field) {
-		DBCollection collection = mongoDb.getCollection("options");
+		DBCollection collection = dbProvider.getMongoDb().getCollection("options");
 		BasicDBObject ref = new BasicDBObject();
 		ref.put("name", field.name());
 		List<String> values = Arrays.asList();
@@ -31,7 +32,7 @@ public class OptionsDao {
 	}
 
 	public void saveOptions(Field field, List<String> options) {
-		DBCollection collection = mongoDb.getCollection("options");
+		DBCollection collection = dbProvider.getMongoDb().getCollection("options");
 		BasicDBObject ref = new BasicDBObject();
 		ref.put("name", field.name());
 
