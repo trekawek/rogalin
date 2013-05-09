@@ -1,13 +1,11 @@
-package pl.art.mnp.rogalin.ui.tab.list;
+package pl.art.mnp.rogalin.ui.tab;
 
 import pl.art.mnp.rogalin.db.ObjectsDao;
-import pl.art.mnp.rogalin.model.Field;
-import pl.art.mnp.rogalin.model.Photo;
+import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.ui.tab.object.photo.DbPhoto;
 
 import com.mongodb.DBObject;
-import com.vaadin.server.StreamResource;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.server.Resource;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Image;
@@ -19,12 +17,8 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class ObjectPreview extends VerticalLayout {
 
-	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider, ClickListener clickListener) {
+	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider) {
 		super();
-		Button back = new Button("Powrót do listy");
-		back.addClickListener(clickListener);
-		addComponent(back);
-
 		GridLayout columns = new GridLayout(2, 1);
 		columns.setSpacing(true);
 		FormLayout leftColumn = new FormLayout();
@@ -36,7 +30,7 @@ public class ObjectPreview extends VerticalLayout {
 		addComponent(belowColumns);
 
 		int i = 0;
-		for (Field f : Field.values()) {
+		for (FieldInfo f : FieldInfo.values()) {
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
@@ -55,19 +49,19 @@ public class ObjectPreview extends VerticalLayout {
 
 		GridLayout photos = new GridLayout(4, 1);
 		photos.setSpacing(true);
-		for (Photo p : objectProvider.getPhotos(dbObject)) {
+		for (DbPhoto p : objectProvider.getPhotos(dbObject)) {
 			photos.addComponent(renderPhoto(p));
 		}
 		addComponent(photos);
 	}
 
-	private Layout renderPhoto(Photo p) {
+	private Layout renderPhoto(DbPhoto p) {
 		Layout layout = new VerticalLayout();
-		StreamResource source = new StreamResource(p, p.getName());
-		Image image = new Image(p.getName(), source);
+		Resource res = p.getResource();
+		Image image = new Image(p.getFileName(), res);
 		image.setWidth("150px");
 		layout.addComponent(image);
-		Link link = new Link("Pełny rozmiar", source);
+		Link link = new Link("Pełny rozmiar", res);
 		link.setTargetName("_blank");
 		layout.addComponent(link);
 		return layout;

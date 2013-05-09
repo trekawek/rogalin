@@ -19,31 +19,31 @@ import pl.art.mnp.rogalin.ui.field.UiField;
 public enum FieldType {
 	TEXT() {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new TextUiField(field);
 		}
 	},
 	TEXT_AREA() {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new TextAreaUiField(field);
 		}
 	},
 	SELECT(true) {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new SelectUiField(field, dbProvider);
 		}
 	},
 	MULTI_SELECT(true) {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new MultiSelectUiField(field, dbProvider);
 		}
 
 		@SuppressWarnings("unchecked")
 		@Override
-		String getValue(DBObject dbObject, Field f) {
+		String getValue(DBObject dbObject, FieldInfo f) {
 			DBObject compositeValue = (DBObject) dbObject.get(f.name());
 			List<String> values = new ArrayList<String>();
 			values.addAll((List<String>) compositeValue.get("values"));
@@ -56,20 +56,20 @@ public enum FieldType {
 	},
 	COMBO(true) {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new ComboBoxUiField(field, dbProvider);
 		}
 	},
 	DATE() {
 		@Override
-		public UiField getUiField(Field field, MongoDbProvider dbProvider) {
+		public UiField getUiField(FieldInfo field, MongoDbProvider dbProvider) {
 			return new DateUiField(field);
 		}
 	};
 
 	private final boolean isList;
 
-	public abstract UiField getUiField(Field field, MongoDbProvider dbProvider);
+	public abstract UiField getUiField(FieldInfo field, MongoDbProvider dbProvider);
 
 	private FieldType() {
 		this(false);
@@ -83,7 +83,7 @@ public enum FieldType {
 		return isList;
 	}
 
-	String getValue(DBObject dbObject, Field f) {
+	String getValue(DBObject dbObject, FieldInfo f) {
 		Object value = dbObject.get(f.name());
 		if (value == null) {
 			value = "";

@@ -1,11 +1,12 @@
 package pl.art.mnp.rogalin.ui.field;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -29,7 +30,7 @@ public class MultiSelectUiField extends AbstractUiField {
 
 	private final TextField other;
 
-	public MultiSelectUiField(Field field, MongoDbProvider dbProvider) {
+	public MultiSelectUiField(FieldInfo field, MongoDbProvider dbProvider) {
 		super(field, dbProvider);
 		layout = new VerticalLayout();
 		layout.setCaption(field.toString());
@@ -79,6 +80,25 @@ public class MultiSelectUiField extends AbstractUiField {
 			o.put("other", other.getValue());
 		}
 		return o;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deserializeFromMongo(DBObject object) {
+		if (object == null) {
+			return;
+		}
+		DBObject o = (DBObject) object.get(field.name());
+		Collection<String> values = (Collection<String>) o.get("values");
+		if (values == null) {
+			return;
+		}
+		String otherValue = (String) o.get("other");
+		optionGroup.setValue(values);
+		if (otherValue != null) {
+			otherBox.setValue(true);
+			other.setValue(otherValue);
+		}
 	}
 
 	@Override

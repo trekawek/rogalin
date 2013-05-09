@@ -1,6 +1,6 @@
 package pl.art.mnp.rogalin.ui.field;
 
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.mongodb.DBObject;
 import com.vaadin.ui.Component;
@@ -8,7 +8,7 @@ import com.vaadin.ui.Component;
 public interface UiField {
 	static final String EMPTY_FIELD_ERROR = "Pole nie może być puste";
 
-	Field getFieldInfo();
+	FieldInfo getFieldInfo();
 
 	Component getComponent();
 
@@ -19,4 +19,6 @@ public interface UiField {
 	String getStringValue(DBObject o);
 
 	void clear();
+
+	void deserializeFromMongo(DBObject object);
 }

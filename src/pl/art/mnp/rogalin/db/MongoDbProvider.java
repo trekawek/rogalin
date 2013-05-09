@@ -32,7 +32,7 @@ public class MongoDbProvider implements Serializable {
 		return mongoDb;
 	}
 
-	GridFS getGridFS() {
+	public GridFS getGridFS() {
 		return new GridFS(mongoDb, "photos");
 	}
 

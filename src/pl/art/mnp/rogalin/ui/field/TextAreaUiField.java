@@ -1,6 +1,6 @@
 package pl.art.mnp.rogalin.ui.field;
 
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.vaadin.ui.TextArea;
 
@@ -9,7 +9,7 @@ public class TextAreaUiField extends AbstractUiField {
 
 	private final TextArea textArea;
 
-	public TextAreaUiField(Field field) {
+	public TextAreaUiField(FieldInfo field) {
 		super(field);
 		textArea = new TextArea();
 		textArea.setCaption(field.toString());

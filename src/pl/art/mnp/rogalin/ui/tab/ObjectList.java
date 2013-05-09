@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.list;
+package pl.art.mnp.rogalin.ui.tab;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -7,7 +7,7 @@ import java.util.Set;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.db.ObjectsDao;
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.mongodb.DBObject;
 import com.vaadin.shared.ui.MarginInfo;
@@ -22,19 +22,22 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
 @SuppressWarnings("serial")
-public class ObjectListTab extends VerticalLayout {
+public class ObjectList extends VerticalLayout {
 
-	private static final Set<Field> VISIBLE_COLUMNS = EnumSet.of(Field.IDENTIFIER, Field.NAME, Field.TYPE,
-			Field.EVALUATION_DATE);
+	private static final Set<FieldInfo> VISIBLE_COLUMNS = EnumSet.of(FieldInfo.IDENTIFIER, FieldInfo.NAME, FieldInfo.TYPE,
+			FieldInfo.EVALUATION_DATE);
 
 	private final VerticalLayout layout;
 
 	private final ObjectsDao objectDao;
 
+	private final MongoDbProvider dbProvider;
+
 	private Table table;
 
-	public ObjectListTab(MongoDbProvider dbProvider) {
+	public ObjectList(MongoDbProvider dbProvider) {
 		super();
+		this.dbProvider = dbProvider;
 		this.objectDao = dbProvider.getObjectsProvider();
 
 		setMargin(true);
@@ -61,6 +64,7 @@ public class ObjectListTab extends VerticalLayout {
 		editButton.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
+				showEditView();
 			}
 		});
 		Button removeButton = new Button("Usuń");
@@ -92,7 +96,7 @@ public class ObjectListTab extends VerticalLayout {
 		table.setColumnReorderingAllowed(true);
 		table.setImmediate(true);
 		table.setMultiSelect(false);
-		for (Field f : Field.values()) {
+		for (FieldInfo f : FieldInfo.values()) {
 			table.addContainerProperty(f, String.class, "-");
 			table.setColumnCollapsed(f, !VISIBLE_COLUMNS.contains(f));
 		}
@@ -110,8 +114,8 @@ public class ObjectListTab extends VerticalLayout {
 	}
 
 	private Object[] createTableRow(DBObject dbObject) {
-		List<Object> properties = new ArrayList<Object>(Field.values().length);
-		for (Field f : Field.values()) {
+		List<Object> properties = new ArrayList<Object>(FieldInfo.values().length);
+		for (FieldInfo f : FieldInfo.values()) {
 			properties.add(f.getStringValue(dbObject));
 		}
 		return properties.toArray();
@@ -122,9 +126,35 @@ public class ObjectListTab extends VerticalLayout {
 		if (object == null) {
 			return;
 		}
-		ObjectPreview preview = new ObjectPreview(object, objectDao, showTable);
 		removeAllComponents();
+
+		Button back = new Button("Powrót do listy");
+		back.addClickListener(showTable);
+		addComponent(back);
+
+		ObjectPreview preview = new ObjectPreview(object, objectDao);
 		addComponent(preview);
+	}
+
+	private void showEditView() {
+		DBObject object = getSelectedObject();
+		if (object == null) {
+			return;
+		}
+		removeAllComponents();
+
+		Button back = new Button("Powrót do listy");
+		back.addClickListener(showTable);
+		addComponent(back);
+
+		ObjectForm objectForm = new ObjectForm(dbProvider, new Runnable() {
+			@Override
+			public void run() {
+				removeAllComponents();
+				addComponent(layout);
+			}
+		}, object);
+		addComponent(objectForm);
 	}
 
 	private DBObject getSelectedObject() {

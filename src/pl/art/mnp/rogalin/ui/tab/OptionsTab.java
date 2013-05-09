@@ -1,11 +1,11 @@
-package pl.art.mnp.rogalin.ui.tab.options;
+package pl.art.mnp.rogalin.ui.tab;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.db.OptionsDao;
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -29,7 +29,7 @@ public class OptionsTab extends VerticalLayout {
 
 	private final TextField newTextField;
 
-	private Field selectedField;
+	private FieldInfo selectedField;
 
 	private List<String> options;
 
@@ -38,8 +38,8 @@ public class OptionsTab extends VerticalLayout {
 		this.optionsProvider = dbProvider.getOptionsProvider();
 
 		setMargin(true);
-		List<Field> listFields = new ArrayList<Field>();
-		for (Field f : Field.values()) {
+		List<FieldInfo> listFields = new ArrayList<FieldInfo>();
+		for (FieldInfo f : FieldInfo.values()) {
 			if (f.getFieldType().isList()) {
 				listFields.add(f);
 			}
@@ -57,7 +57,7 @@ public class OptionsTab extends VerticalLayout {
 		fieldSelect.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				selectedField = (Field) event.getProperty().getValue();
+				selectedField = (FieldInfo) event.getProperty().getValue();
 				options = optionsProvider.getOptions(selectedField);
 				updateListSelect(false);
 			}

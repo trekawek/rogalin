@@ -7,7 +7,7 @@ import com.vaadin.ui.TextArea;
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.ui.field.UiField;
 
-public enum Field {
+public enum FieldInfo {
 //@formatter:off
 	IDENTIFIER("Numer inwentarzowy", FieldType.TEXT),
 	NAME("Nazwa/Przedmiot/Tytuł", FieldType.TEXT, true),
@@ -53,13 +53,13 @@ public enum Field {
 
 	private final boolean required;
 
-	private Field(String label, FieldType type, boolean required) {
+	private FieldInfo(String label, FieldType type, boolean required) {
 		this.label = label;
 		this.type = type;
 		this.required = required;
 	}
 
-	private Field(String label, FieldType type) {
+	private FieldInfo(String label, FieldType type) {
 		this(label, type, false);
 	}
 

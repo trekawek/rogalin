@@ -1,11 +1,14 @@
 package pl.art.mnp.rogalin.ui.field;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
-import pl.art.mnp.rogalin.model.Field;
+import pl.art.mnp.rogalin.model.FieldInfo;
 
+import com.mongodb.DBObject;
 import com.vaadin.ui.DateField;
 
 @SuppressWarnings("serial")
@@ -15,7 +18,7 @@ public class DateUiField extends AbstractUiField {
 
 	private final DateField dateField;
 
-	public DateUiField(Field field) {
+	public DateUiField(FieldInfo field) {
 		super(field);
 		dateField = new DateField();
 		dateField.setCaption(field.toString());
@@ -34,5 +37,21 @@ public class DateUiField extends AbstractUiField {
 	@Override
 	public Object serializeToMongo() {
 		return DF.format(dateField.getValue());
+	}
+
+	@Override
+	public void deserializeFromMongo(DBObject object) {
+		if (object == null) {
+			return;
+		}
+		String value = (String) object.get(field.name());
+		if (value == null) {
+			return;
+		}
+		try {
+			dateField.setValue(DF.parse(value));
+		} catch (ParseException e) {
+			LOG.log(Level.SEVERE, "Can't parse date", e);
+		}
 	}
 }

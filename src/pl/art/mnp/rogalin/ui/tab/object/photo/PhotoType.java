@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.object;
+package pl.art.mnp.rogalin.ui.tab.object.photo;
 
 public enum PhotoType {
 	CURRENT("Fotografia bieżąca"), HISTORIC("Fotografia archiwalna");

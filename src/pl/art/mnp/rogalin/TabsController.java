@@ -3,32 +3,34 @@ package pl.art.mnp.rogalin;
 import java.io.Serializable;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
+import pl.art.mnp.rogalin.ui.tab.ObjectForm;
+import pl.art.mnp.rogalin.ui.tab.ObjectList;
+import pl.art.mnp.rogalin.ui.tab.OptionsTab;
 import pl.art.mnp.rogalin.ui.tab.SearchTab;
-import pl.art.mnp.rogalin.ui.tab.list.ObjectListTab;
-import pl.art.mnp.rogalin.ui.tab.object.ObjectTab;
-import pl.art.mnp.rogalin.ui.tab.options.OptionsTab;
 
 import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 public class TabsController implements Serializable {
 
-	private final ObjectListTab listTab;
-
-	private final ObjectTab objectTab;
-
-	private final SearchTab searchTab;
-
-	private final OptionsTab optionsTab;
+	private final ObjectList listTab;
 
 	private final TabSheet tabs;
 
 	public TabsController(MongoDbProvider dbProvider) {
 		tabs = new TabSheet();
-		tabs.addTab(listTab = new ObjectListTab(dbProvider), "Obiekty");
-		tabs.addTab(objectTab = new ObjectTab(dbProvider, this), "Dodaj nowy");
-		tabs.addTab(searchTab = new SearchTab(), "Wyszukaj");
-		tabs.addTab(optionsTab = new OptionsTab(dbProvider), "Kategorie");
+		tabs.addTab(listTab = new ObjectList(dbProvider), "Obiekty");
+		VerticalLayout newObjectLayout = new VerticalLayout(new ObjectForm(dbProvider, new Runnable() {
+			@Override
+			public void run() {
+				switchToListTab(true);
+			}
+		}));
+		newObjectLayout.setMargin(true);
+		tabs.addTab(newObjectLayout, "Dodaj nowy");
+		tabs.addTab(new SearchTab(), "Wyszukaj");
+		tabs.addTab(new OptionsTab(dbProvider), "Kategorie");
 	}
 
 	public void switchToListTab(boolean reload) {
