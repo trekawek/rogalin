@@ -1,18 +1,23 @@
 package pl.art.mnp.rogalin.ui.tab.object.photo;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import org.bson.types.ObjectId;
-
-import com.mongodb.gridfs.GridFS;
+import com.mongodb.DBObject;
 import com.vaadin.server.Resource;
 
 public interface PhotoModel {
 
 	Resource getResource();
 
+	Resource getThumbnailResource();
+
 	String getFileName();
 
-	ObjectId getFileId(GridFS gridFS) throws FileNotFoundException;
+	void remove();
 
+	void cleanup();
+
+	PhotoType getType();
+
+	DBObject getFileReferences() throws IOException;
 }

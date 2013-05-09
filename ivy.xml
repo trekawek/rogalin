@@ -32,8 +32,10 @@
 		<dependency org="com.vaadin" name="vaadin-client-compiler"
 			rev="&vaadin.version;" conf="widgetset-compile->default" />
 
-		<dependency org="org.mongodb" name="mongo-java-driver" rev="2.11.0"/>
-		
 		<dependency org="commons-lang" name="commons-lang" rev="2.6"/>
+		<dependency org="org.mongodb" name="mongo-java-driver" rev="2.11.0"/>
+		<dependency org="net.coobird" name="thumbnailator" rev="0.4.3"/>
+		
+		<dependency org="org.vaadin.addon" name="confirmdialog" rev="2.0.4" />
 	</dependencies>
 </ivy-module>

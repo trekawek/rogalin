@@ -3,7 +3,7 @@ package pl.art.mnp.rogalin.ui.tab.object.photo;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.bson.types.ObjectId;
+import pl.art.mnp.rogalin.db.MongoDbProvider;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -11,35 +11,49 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
-import com.vaadin.server.StreamResource.StreamSource;
 
 @SuppressWarnings("serial")
 public class DbPhoto implements PhotoModel {
 
 	private final GridFSDBFile file;
 
+	private GridFSDBFile thumbnail;
+
 	private final PhotoType type;
 
-	private final ObjectId objectId;
+	private final DBObject references;
 
-	public DbPhoto(DBObject photo, GridFS gridFS) {
-		objectId = (ObjectId) photo.get("file_id");
-		file = gridFS.findOne(new BasicDBObject("_id", objectId));
+	private final MongoDbProvider dbProvider;
+
+	public DbPhoto(DBObject photo, MongoDbProvider dbProvider) throws FileNotFoundException {
+		this.dbProvider = dbProvider;
+		GridFS gridFS = dbProvider.getGridFS();
+
+		references = (DBObject) photo.get("references");
+		file = gridFS.findOne(new BasicDBObject("_id", references.get("photo_id")));
+		thumbnail = gridFS.findOne(new BasicDBObject("_id", references.get("thumbnail_id")));
+		if (file == null) {
+			throw new FileNotFoundException();
+		}
+		if (thumbnail == null) {
+			thumbnail = file;
+		}
 		type = PhotoType.valueOf((String) photo.get("type"));
 	}
 
+	@Override
 	public PhotoType getType() {
 		return type;
 	}
 
 	@Override
 	public Resource getResource() {
-		return new StreamResource(new StreamSource() {
-			@Override
-			public InputStream getStream() {
-				return file.getInputStream();
-			}
-		}, file.getFilename());
+		return new GridFsFileSource(file);
+	}
+
+	@Override
+	public Resource getThumbnailResource() {
+		return new GridFsFileSource(thumbnail);
 	}
 
 	@Override
@@ -48,7 +62,28 @@ public class DbPhoto implements PhotoModel {
 	}
 
 	@Override
-	public ObjectId getFileId(GridFS gridFS) throws FileNotFoundException {
-		return objectId;
+	public DBObject getFileReferences() {
+		return references;
+	}
+
+	@Override
+	public void remove() {
+		dbProvider.getGridFS().remove(new BasicDBObject("_id", file.getId()));
+		dbProvider.getGridFS().remove(new BasicDBObject("_id", thumbnail.getId()));
+	}
+
+	@Override
+	public void cleanup() {
+	}
+
+	private static class GridFsFileSource extends StreamResource {
+		public GridFsFileSource(final GridFSDBFile file) {
+			super(new StreamSource() {
+				@Override
+				public InputStream getStream() {
+					return file.getInputStream();
+				}
+			}, file.getFilename());
+		}
 	}
 }

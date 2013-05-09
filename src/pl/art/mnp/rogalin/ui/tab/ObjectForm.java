@@ -3,11 +3,14 @@ package pl.art.mnp.rogalin.ui.tab;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.model.FieldInfo;
 import pl.art.mnp.rogalin.ui.field.UiField;
 import pl.art.mnp.rogalin.ui.tab.object.photo.PhotoContainer;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.ui.Button;
@@ -31,12 +34,15 @@ public class ObjectForm extends VerticalLayout {
 
 	private final Runnable saveAction;
 
+	private final DBObject editedObject;
+
 	public ObjectForm(MongoDbProvider dbProvider, Runnable saveAction) {
 		this(dbProvider, saveAction, null);
 	}
 
 	public ObjectForm(MongoDbProvider dbProvider, Runnable saveAction, DBObject object) {
 		super();
+		this.editedObject = object;
 		this.dbProvider = dbProvider;
 		this.saveAction = saveAction;
 
@@ -68,21 +74,21 @@ public class ObjectForm extends VerticalLayout {
 			container.addComponent(uiField.getComponent());
 		}
 
-		photoContainer = new PhotoContainer(dbProvider.getObjectsProvider(), object);
+		photoContainer = new PhotoContainer(dbProvider, object);
 		addComponent(photoContainer);
 
 		Button button = new Button("Zapisz obiekt");
 		button.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				addObject();
+				saveObject();
 			}
 		});
 		addComponent(button);
 
 	}
 
-	private void addObject() {
+	private void saveObject() {
 		boolean validated = true;
 		for (UiField field : fields) {
 			try {
@@ -91,18 +97,22 @@ public class ObjectForm extends VerticalLayout {
 				validated = false;
 			}
 		}
-		if (validated) {
-			dbProvider.getObjectsProvider().addNewObject(fields,
-					photoContainer.serializePhotos(dbProvider.getGridFS()));
-			Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
-			saveAction.run();
-			for (UiField field : fields) {
-				field.clear();
-				photoContainer.clear();
-			}
-		} else {
+		if (!validated) {
 			Notification.show("Uzupełnij wszystkie wymagane pola.", Type.ERROR_MESSAGE);
+			return;
+		}
+		BasicDBList photos = photoContainer.serializePhotos();
+		if (editedObject == null) {
+			dbProvider.getObjectsProvider().addObject(fields, photos);
+		} else {
+			dbProvider.getObjectsProvider().updateObject(fields, photos, (ObjectId) editedObject.get("_id"));
+
+		}
+		Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
+		saveAction.run();
+		for (UiField field : fields) {
+			field.clear();
+			photoContainer.clear();
 		}
 	}
-
 }

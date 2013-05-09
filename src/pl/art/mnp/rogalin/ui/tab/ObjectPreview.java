@@ -5,7 +5,6 @@ import pl.art.mnp.rogalin.model.FieldInfo;
 import pl.art.mnp.rogalin.ui.tab.object.photo.DbPhoto;
 
 import com.mongodb.DBObject;
-import com.vaadin.server.Resource;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Image;
@@ -57,11 +56,14 @@ public class ObjectPreview extends VerticalLayout {
 
 	private Layout renderPhoto(DbPhoto p) {
 		Layout layout = new VerticalLayout();
-		Resource res = p.getResource();
-		Image image = new Image(p.getFileName(), res);
+		Image image = new Image(p.getFileName(), p.getThumbnailResource());
 		image.setWidth("150px");
 		layout.addComponent(image);
-		Link link = new Link("Pełny rozmiar", res);
+
+		String type = p.getType().toString();
+		layout.addComponent(new Label(type));
+
+		Link link = new Link("Pełny rozmiar", p.getResource());
 		link.setTargetName("_blank");
 		layout.addComponent(link);
 		return layout;

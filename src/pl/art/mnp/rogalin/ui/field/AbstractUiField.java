@@ -13,7 +13,7 @@ import com.vaadin.ui.Component;
 @SuppressWarnings("serial")
 public abstract class AbstractUiField implements UiField, Serializable {
 
-	protected final Logger LOG = Logger.getLogger(getClass().getName());
+	protected static final Logger LOG = Logger.getLogger(AbstractUiField.class.getName());
 
 	protected final FieldInfo field;
 

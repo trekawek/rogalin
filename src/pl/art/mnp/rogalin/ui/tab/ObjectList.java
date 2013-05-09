@@ -5,33 +5,51 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.vaadin.dialogs.ConfirmDialog;
+
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.model.FieldInfo;
 
 import com.mongodb.DBObject;
-import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.event.Action;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.event.Action.Handler;
+import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
 @SuppressWarnings("serial")
-public class ObjectList extends VerticalLayout {
+public class ObjectList extends VerticalLayout implements Handler {
 
-	private static final Set<FieldInfo> VISIBLE_COLUMNS = EnumSet.of(FieldInfo.IDENTIFIER, FieldInfo.NAME, FieldInfo.TYPE,
-			FieldInfo.EVALUATION_DATE);
+	private static final Action PREVIEW = new Action("Zobacz");
+
+	private static final Action EDIT = new Action("Edytuj");
+
+	private static final Action REMOVE = new Action("Usuń");
+
+	private static final Action[] ACTIONS = new Action[] { PREVIEW, EDIT, REMOVE };
+
+	private static final Set<FieldInfo> VISIBLE_COLUMNS = EnumSet.of(FieldInfo.IDENTIFIER, FieldInfo.NAME,
+			FieldInfo.TYPE, FieldInfo.EVALUATION_DATE);
 
 	private final VerticalLayout layout;
 
 	private final ObjectsDao objectDao;
 
 	private final MongoDbProvider dbProvider;
+
+	private String query;
 
 	private Table table;
 
@@ -45,46 +63,40 @@ public class ObjectList extends VerticalLayout {
 		setWidth("100%");
 
 		layout = new VerticalLayout();
-		layout.addComponent(renderButtons());
+		layout.addComponent(searchField());
 		layout.addComponent(renderTable());
 		addComponent(layout);
 	}
 
-	private HorizontalLayout renderButtons() {
-		HorizontalLayout buttons = new HorizontalLayout();
-		buttons.setSpacing(true);
-		Button previewButton = new Button("Zobacz");
-		previewButton.addClickListener(new ClickListener() {
+	private Component searchField() {
+		HorizontalLayout layout = new HorizontalLayout();
+		layout.setSpacing(true);
+		final TextField searchText = new TextField();
+		searchText.setImmediate(true);
+		searchText.addValueChangeListener(new ValueChangeListener() {
 			@Override
-			public void buttonClick(ClickEvent event) {
-				showPreview();
+			public void valueChange(ValueChangeEvent event) {
+				filterResults(searchText.getValue());
 			}
 		});
-		Button editButton = new Button("Edytuj");
-		editButton.addClickListener(new ClickListener() {
+		Button searchButton = new Button("Wyszukaj");
+		searchButton.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				showEditView();
+				filterResults(searchText.getValue());
 			}
 		});
-		Button removeButton = new Button("Usuń");
-		removeButton.addClickListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				remove();
-			}
-		});
-		buttons.addComponents(previewButton, editButton, removeButton);
-		buttons.setMargin(new MarginInfo(false, false, true, false));
-		return buttons;
+		layout.addComponents(searchText, searchButton);
+		return layout;
 	}
 
-	protected void remove() {
-		DBObject selected = getSelectedObject();
-		if (selected != null) {
-			objectDao.removeObject(selected);
-			refreshTable();
+	private void filterResults(String value) {
+		if (StringUtils.isEmpty(value)) {
+			this.query = null;
+		} else {
+			this.query = value;
 		}
+		refreshTable();
 	}
 
 	private Table renderTable() {
@@ -96,6 +108,17 @@ public class ObjectList extends VerticalLayout {
 		table.setColumnReorderingAllowed(true);
 		table.setImmediate(true);
 		table.setMultiSelect(false);
+		table.addActionHandler(this);
+		table.setSelectable(false);
+		table.addItemClickListener(new ItemClickListener() {
+			@Override
+			public void itemClick(ItemClickEvent event) {
+				if (event.isDoubleClick()) {
+					DBObject object = objectDao.getObject(event.getItemId());
+					showPreview(object);
+				}
+			}
+		});
 		for (FieldInfo f : FieldInfo.values()) {
 			table.addContainerProperty(f, String.class, "-");
 			table.setColumnCollapsed(f, !VISIBLE_COLUMNS.contains(f));
@@ -107,7 +130,12 @@ public class ObjectList extends VerticalLayout {
 
 	public void refreshTable() {
 		table.removeAllItems();
-		List<DBObject> objects = objectDao.getObjectList();
+		List<DBObject> objects;
+		if (StringUtils.isEmpty(query)) {
+			objects = objectDao.getObjectList();
+		} else {
+			objects = objectDao.getFilteredObjectList(query);
+		}
 		for (DBObject o : objects) {
 			table.addItem(createTableRow(o), o.get("_id"));
 		}
@@ -121,8 +149,34 @@ public class ObjectList extends VerticalLayout {
 		return properties.toArray();
 	}
 
-	private void showPreview() {
-		DBObject object = getSelectedObject();
+	private final ClickListener showTable = new ClickListener() {
+		@Override
+		public void buttonClick(ClickEvent event) {
+			removeAllComponents();
+			addComponent(layout);
+		}
+	};
+
+	@Override
+	public Action[] getActions(Object target, Object sender) {
+		return ACTIONS;
+	}
+
+	@Override
+	public void handleAction(Action action, Object sender, Object target) {
+		if (sender == table) {
+			DBObject object = objectDao.getObject(target);
+			if (action == PREVIEW) {
+				showPreview(object);
+			} else if (action == EDIT) {
+				showEditView(object);
+			} else if (action == REMOVE) {
+				remove(object);
+			}
+		}
+	}
+
+	private void showPreview(DBObject object) {
 		if (object == null) {
 			return;
 		}
@@ -136,8 +190,7 @@ public class ObjectList extends VerticalLayout {
 		addComponent(preview);
 	}
 
-	private void showEditView() {
-		DBObject object = getSelectedObject();
+	private void showEditView(DBObject object) {
 		if (object == null) {
 			return;
 		}
@@ -150,6 +203,7 @@ public class ObjectList extends VerticalLayout {
 		ObjectForm objectForm = new ObjectForm(dbProvider, new Runnable() {
 			@Override
 			public void run() {
+				refreshTable();
 				removeAllComponents();
 				addComponent(layout);
 			}
@@ -157,20 +211,19 @@ public class ObjectList extends VerticalLayout {
 		addComponent(objectForm);
 	}
 
-	private DBObject getSelectedObject() {
-		Object itemId = table.getValue();
-		if (itemId == null) {
-			Notification.show("Nie wybrano obiektu", Type.ERROR_MESSAGE);
-			return null;
-		}
-		return objectDao.getObject(itemId);
+	private void remove(final DBObject object) {
+		ConfirmDialog.show(this.getUI(), "Potwierdzenie", "Czy na pewno chcesz usunąć ten obiekt?", "OK",
+				"Anuluj", new ConfirmDialog.Listener() {
+					@Override
+					public void onClose(ConfirmDialog dialog) {
+						if (!dialog.isConfirmed()) {
+							return;
+						}
+						if (object != null) {
+							objectDao.removeObject(object);
+							refreshTable();
+						}
+					}
+				});
 	}
-
-	private final ClickListener showTable = new ClickListener() {
-		@Override
-		public void buttonClick(ClickEvent event) {
-			removeAllComponents();
-			addComponent(layout);
-		}
-	};
 }

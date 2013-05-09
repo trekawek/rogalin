@@ -1,6 +1,5 @@
 package pl.art.mnp.rogalin.ui.tab.object.photo;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -10,12 +9,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import pl.art.mnp.rogalin.db.ObjectsDao;
+import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.ui.tab.object.photo.UploadedPhoto.State;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
-import com.mongodb.gridfs.GridFS;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Upload;
@@ -39,12 +37,15 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 
 	private final Map<String, UploadedPhoto> tempImages = new LinkedHashMap<String, UploadedPhoto>();
 
+	private final MongoDbProvider dbProvider;
+
 	private Map<String, PhotoComponent> components;
 
 	private Label imageLabel;
 
-	public PhotoContainer(ObjectsDao objectsDao, DBObject object) {
+	public PhotoContainer(MongoDbProvider dbProvider, DBObject object) {
 		super();
+		this.dbProvider = dbProvider;
 		imageLabel = new Label("Zdjęcia");
 		imageLabel.addStyleName(Runo.LABEL_H2);
 		imageLabel.setSizeUndefined();
@@ -67,7 +68,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		addComponent(upload);
 
 		if (object != null) {
-			showExistingImages(objectsDao.getPhotos(object));
+			showExistingImages(dbProvider.getObjectsProvider().getPhotos(object));
 			updateImages();
 		}
 	}
@@ -83,13 +84,15 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		updateImages();
 	}
 
-	public BasicDBList serializePhotos(GridFS gridFS) {
+	public BasicDBList serializePhotos() {
 		BasicDBList objects = new BasicDBList();
-		for (PhotoComponent component : components.values()) {
-			try {
-				objects.add(component.serializeToMongo(gridFS));
-			} catch (FileNotFoundException e) {
-				LOG.log(Level.WARNING, "Can't save image", e);
+		if (components != null) {
+			for (PhotoComponent component : components.values()) {
+				try {
+					objects.add(component.serializeToMongo());
+				} catch (IOException e) {
+					LOG.log(Level.WARNING, "Can't save image", e);
+				}
 			}
 		}
 		return objects;
@@ -98,28 +101,29 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	private void updateImages() {
 		imageContainer.removeAllComponents();
 		boolean imageDisplayed = false;
-		Map<String, PhotoComponent> updatedComponents = new HashMap<String, PhotoComponent>();
-		for (PhotoModel uploadedImage : images.values()) {
+		Map<String, PhotoComponent> photoComponents = new HashMap<String, PhotoComponent>();
+		for (PhotoModel image : images.values()) {
 			imageDisplayed = true;
 			PhotoComponent component = null;
 			if (components != null) {
-				component = components.get(uploadedImage.getFileName());
+				component = components.get(image.getFileName());
 			}
 			if (component == null) {
-				component = new PhotoComponent(this, uploadedImage);
+				component = new PhotoComponent(this, image);
 			}
 			imageContainer.addComponent(component);
-			updatedComponents.put(uploadedImage.getFileName(), component);
+			photoComponents.put(image.getFileName(), component);
 		}
-		components = updatedComponents;
+		components = photoComponents;
 		imageLabel.setVisible(imageDisplayed);
 	}
 
 	@Override
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		try {
-			UploadedPhoto uploaded = new UploadedPhoto(filename, mimeType);
+			UploadedPhoto uploaded = new UploadedPhoto(filename, mimeType, dbProvider);
 			tempImages.put(filename, uploaded);
+			components.remove(filename);
 			return uploaded.getOutputStream();
 		} catch (IOException e) {
 			LOG.log(Level.SEVERE, "Can't receive upload", e);
