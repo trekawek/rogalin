@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.object.photo;
+package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.IOException;
 
@@ -61,4 +61,7 @@ public class PhotoComponent extends VerticalLayout {
 		typeSelection.setValue(o.get("type"));
 	}
 
+	public void cleanup() {
+		photoModel.cleanup();
+	}
 }

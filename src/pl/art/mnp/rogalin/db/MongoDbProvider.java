@@ -1,9 +1,8 @@
 package pl.art.mnp.rogalin.db;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
+import java.util.logging.Logger;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
@@ -12,20 +11,19 @@ import com.mongodb.gridfs.GridFS;
 @SuppressWarnings("serial")
 public class MongoDbProvider implements Serializable {
 
+	protected static final Logger LOG = Logger.getLogger(MongoDbProvider.class.getName());
+
 	private transient DB mongoDb;
 
-	public MongoDbProvider() throws UnknownHostException {
-		initMongoDb();
-	}
+	private transient MongoClient mongo;
 
-	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		stream.defaultReadObject();
-		initMongoDb();
-	}
+	private transient GridFS gridFs;
 
-	private void initMongoDb() throws UnknownHostException {
-		MongoClient mongo = new MongoClient();
+	public void connect() throws UnknownHostException {
+		LOG.info("Connecting to mongo");
+		mongo = new MongoClient();
 		mongoDb = mongo.getDB("rogalin");
+		gridFs = new GridFS(getMongoDb(), "photos");
 	}
 
 	DB getMongoDb() {
@@ -33,7 +31,7 @@ public class MongoDbProvider implements Serializable {
 	}
 
 	public GridFS getGridFS() {
-		return new GridFS(mongoDb, "photos");
+		return gridFs;
 	}
 
 	public OptionsDao getOptionsProvider() {
@@ -42,5 +40,15 @@ public class MongoDbProvider implements Serializable {
 
 	public ObjectsDao getObjectsProvider() {
 		return new ObjectsDao(this);
+	}
+
+	public void close() {
+		LOG.info("Closing connection");
+		if (mongo != null) {
+			mongo.close();
+		}
+		mongo = null;
+		mongoDb = null;
+		gridFs = null;
 	}
 }

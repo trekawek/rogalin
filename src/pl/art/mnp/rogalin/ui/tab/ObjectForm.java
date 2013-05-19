@@ -8,7 +8,7 @@ import org.bson.types.ObjectId;
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.model.FieldInfo;
 import pl.art.mnp.rogalin.ui.field.UiField;
-import pl.art.mnp.rogalin.ui.tab.object.photo.PhotoContainer;
+import pl.art.mnp.rogalin.ui.photo.PhotoContainer;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -32,15 +32,15 @@ public class ObjectForm extends VerticalLayout {
 
 	private final MongoDbProvider dbProvider;
 
-	private final Runnable saveAction;
+	private final SaveActionListener saveAction;
 
 	private final DBObject editedObject;
 
-	public ObjectForm(MongoDbProvider dbProvider, Runnable saveAction) {
+	public ObjectForm(MongoDbProvider dbProvider, SaveActionListener saveAction) {
 		this(dbProvider, saveAction, null);
 	}
 
-	public ObjectForm(MongoDbProvider dbProvider, Runnable saveAction, DBObject object) {
+	public ObjectForm(MongoDbProvider dbProvider, SaveActionListener saveAction, DBObject object) {
 		super();
 		this.editedObject = object;
 		this.dbProvider = dbProvider;
@@ -109,7 +109,7 @@ public class ObjectForm extends VerticalLayout {
 
 		}
 		Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
-		saveAction.run();
+		saveAction.onSaveAction();
 		for (UiField field : fields) {
 			field.clear();
 			photoContainer.clear();

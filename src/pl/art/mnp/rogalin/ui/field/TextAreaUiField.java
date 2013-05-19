@@ -16,6 +16,10 @@ public class TextAreaUiField extends AbstractUiField {
 		textArea.setRequired(field.isRequired());
 		textArea.setValidationVisible(true);
 		textArea.setRequiredError(EMPTY_FIELD_ERROR);
+		if (field == FieldInfo.DESC) {
+			textArea.setColumns(40);
+			textArea.setRows(6);
+		}
 		field.setComponentProperties(textArea);
 	}
 

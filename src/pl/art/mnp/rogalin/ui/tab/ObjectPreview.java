@@ -2,12 +2,11 @@ package pl.art.mnp.rogalin.ui.tab;
 
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.model.FieldInfo;
-import pl.art.mnp.rogalin.ui.tab.object.photo.DbPhoto;
+import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
 import com.mongodb.DBObject;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Link;
@@ -56,16 +55,14 @@ public class ObjectPreview extends VerticalLayout {
 
 	private Layout renderPhoto(DbPhoto p) {
 		Layout layout = new VerticalLayout();
-		Image image = new Image(p.getFileName(), p.getThumbnailResource());
-		image.setWidth("150px");
-		layout.addComponent(image);
+
+		Link link = new Link("", p.getResource());
+		link.setIcon(p.getThumbnailResource());
+		link.setTargetName("_blank");
+		layout.addComponent(link);
 
 		String type = p.getType().toString();
 		layout.addComponent(new Label(type));
-
-		Link link = new Link("Pełny rozmiar", p.getResource());
-		link.setTargetName("_blank");
-		layout.addComponent(link);
 		return layout;
 	}
 }

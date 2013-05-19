@@ -1,7 +1,8 @@
-package pl.art.mnp.rogalin.ui.tab.object.photo;
+package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,13 +11,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.ui.tab.object.photo.UploadedPhoto.State;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.Upload;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Upload.FailedEvent;
 import com.vaadin.ui.Upload.FailedListener;
 import com.vaadin.ui.Upload.FinishedEvent;
@@ -46,6 +48,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	public PhotoContainer(MongoDbProvider dbProvider, DBObject object) {
 		super();
 		this.dbProvider = dbProvider;
+		this.components = Collections.emptyMap();
 		imageLabel = new Label("Zdjęcia");
 		imageLabel.addStyleName(Runo.LABEL_H2);
 		imageLabel.setSizeUndefined();
@@ -90,6 +93,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 			for (PhotoComponent component : components.values()) {
 				try {
 					objects.add(component.serializeToMongo());
+					component.cleanup();
 				} catch (IOException e) {
 					LOG.log(Level.WARNING, "Can't save image", e);
 				}
@@ -105,9 +109,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		for (PhotoModel image : images.values()) {
 			imageDisplayed = true;
 			PhotoComponent component = null;
-			if (components != null) {
-				component = components.get(image.getFileName());
-			}
+			component = components.get(image.getFileName());
 			if (component == null) {
 				component = new PhotoComponent(this, image);
 			}
@@ -134,9 +136,12 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	@Override
 	public void uploadFinished(FinishedEvent event) {
 		UploadedPhoto photo = tempImages.remove(event.getFilename());
-		photo.setState(State.FINISHED);
-		images.put(photo.getFileName(), photo);
-		updateImages();
+		if (photo.createThumbnails()) {
+			images.put(photo.getFileName(), photo);
+			updateImages();
+		} else {
+			Notification.show("Nie można zapisać zdjęcia", Type.ERROR_MESSAGE);
+		}
 	}
 
 	@Override

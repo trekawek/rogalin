@@ -30,7 +30,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
 @SuppressWarnings("serial")
-public class ObjectList extends VerticalLayout implements Handler {
+public class ObjectList extends VerticalLayout implements Handler, SaveActionListener {
 
 	private static final Action PREVIEW = new Action("Zobacz");
 
@@ -86,7 +86,14 @@ public class ObjectList extends VerticalLayout implements Handler {
 				filterResults(searchText.getValue());
 			}
 		});
-		layout.addComponents(searchText, searchButton);
+		Button resetSearch = new Button("Pokaż wszystkie");
+		resetSearch.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				searchText.setValue("");
+			}
+		});
+		layout.addComponents(searchText, searchButton, resetSearch);
 		return layout;
 	}
 
@@ -200,14 +207,7 @@ public class ObjectList extends VerticalLayout implements Handler {
 		back.addClickListener(showTable);
 		addComponent(back);
 
-		ObjectForm objectForm = new ObjectForm(dbProvider, new Runnable() {
-			@Override
-			public void run() {
-				refreshTable();
-				removeAllComponents();
-				addComponent(layout);
-			}
-		}, object);
+		ObjectForm objectForm = new ObjectForm(dbProvider, this, object);
 		addComponent(objectForm);
 	}
 
@@ -225,5 +225,12 @@ public class ObjectList extends VerticalLayout implements Handler {
 						}
 					}
 				});
+	}
+
+	@Override
+	public void onSaveAction() {
+		refreshTable();
+		removeAllComponents();
+		addComponent(layout);
 	}
 }

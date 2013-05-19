@@ -4,13 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bson.types.ObjectId;
 
 import pl.art.mnp.rogalin.ui.field.UiField;
-import pl.art.mnp.rogalin.ui.tab.object.photo.DbPhoto;
+import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -48,11 +47,12 @@ public class ObjectsDao implements Serializable {
 		final CommandResult commandResult = dbProvider.getMongoDb().command(textSearchCommand);
 		@SuppressWarnings("unchecked")
 		List<DBObject> list = (List<DBObject>) commandResult.get("results");
-		LOG.log(Level.WARNING, list.toString());
-		for (DBObject o : list) {
-			ObjectId id = (ObjectId) ((DBObject) o.get("obj")).get("_id");
-			DBObject object = collection.findOne(new BasicDBObject("_id", id));
-			objects.add(object);
+		if (list != null) {
+			for (DBObject o : list) {
+				ObjectId id = (ObjectId) ((DBObject) o.get("obj")).get("_id");
+				DBObject object = collection.findOne(new BasicDBObject("_id", id));
+				objects.add(object);
+			}
 		}
 		return objects;
 	}

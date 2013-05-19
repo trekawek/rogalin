@@ -6,13 +6,14 @@ import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.ui.tab.ObjectForm;
 import pl.art.mnp.rogalin.ui.tab.ObjectList;
 import pl.art.mnp.rogalin.ui.tab.OptionsTab;
+import pl.art.mnp.rogalin.ui.tab.SaveActionListener;
 import pl.art.mnp.rogalin.ui.tab.SearchTab;
 
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class TabsController implements Serializable {
+public class TabsController implements Serializable, SaveActionListener {
 
 	private final ObjectList listTab;
 
@@ -21,12 +22,7 @@ public class TabsController implements Serializable {
 	public TabsController(MongoDbProvider dbProvider) {
 		tabs = new TabSheet();
 		tabs.addTab(listTab = new ObjectList(dbProvider), "Obiekty");
-		VerticalLayout newObjectLayout = new VerticalLayout(new ObjectForm(dbProvider, new Runnable() {
-			@Override
-			public void run() {
-				switchToListTab(true);
-			}
-		}));
+		VerticalLayout newObjectLayout = new VerticalLayout(new ObjectForm(dbProvider, this));
 		newObjectLayout.setMargin(true);
 		tabs.addTab(newObjectLayout, "Dodaj nowy");
 		tabs.addTab(new SearchTab(), "Wyszukaj");
@@ -42,5 +38,10 @@ public class TabsController implements Serializable {
 
 	TabSheet getTabs() {
 		return tabs;
+	}
+
+	@Override
+	public void onSaveAction() {
+		switchToListTab(true);
 	}
 }

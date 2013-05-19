@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.object.photo;
+package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -27,11 +27,13 @@ public class DbPhoto implements PhotoModel {
 
 	public DbPhoto(DBObject photo, MongoDbProvider dbProvider) throws FileNotFoundException {
 		this.dbProvider = dbProvider;
-		GridFS gridFS = dbProvider.getGridFS();
 
 		references = (DBObject) photo.get("references");
+
+		GridFS gridFS = dbProvider.getGridFS();
 		file = gridFS.findOne(new BasicDBObject("_id", references.get("photo_id")));
 		thumbnail = gridFS.findOne(new BasicDBObject("_id", references.get("thumbnail_id")));
+
 		if (file == null) {
 			throw new FileNotFoundException();
 		}
@@ -68,8 +70,9 @@ public class DbPhoto implements PhotoModel {
 
 	@Override
 	public void remove() {
-		dbProvider.getGridFS().remove(new BasicDBObject("_id", file.getId()));
-		dbProvider.getGridFS().remove(new BasicDBObject("_id", thumbnail.getId()));
+		GridFS gridFs = dbProvider.getGridFS();
+		gridFs.remove(new BasicDBObject("_id", file.getId()));
+		gridFs.remove(new BasicDBObject("_id", thumbnail.getId()));
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.object.photo;
+package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,9 +28,11 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 		FINISHED, FAILED, IN_PROGRESS;
 	};
 
-	private final File file;
+	private final File rawFile;
 
-	private File thumbnail;
+	private final File photoFile;
+
+	private final File thumbnailFile;
 
 	private final String fileName;
 
@@ -38,35 +40,28 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 
 	private final MongoDbProvider dbProvider;
 
-	private State state;
-
 	public UploadedPhoto(String fileName, String mimeType, MongoDbProvider dbProvider) throws IOException {
-		this.file = File.createTempFile("rogalin", fileName);
-		this.thumbnail = File.createTempFile("rogalin_thumb", fileName);
+		this.rawFile = File.createTempFile("rogalin_raw", fileName);
+		this.photoFile = File.createTempFile("rogalin_normal", fileName);
+		this.thumbnailFile = File.createTempFile("rogalin_thumb", fileName);
 		this.fileName = fileName;
 		this.mimeType = mimeType;
-		this.state = State.IN_PROGRESS;
 		this.dbProvider = dbProvider;
 	}
 
-	public State getState() {
-		return state;
-	}
-
-	public void setState(State state) {
-		this.state = state;
-		if (state == State.FINISHED) {
-			try {
-				Thumbnails.of(file).width(150).toFile(thumbnail);
-			} catch (IOException e) {
-				LOG.log(Level.WARNING, "Can't create thumbnail", e);
-				thumbnail = file;
-			}
+	public boolean createThumbnails() {
+		try {
+			Thumbnails.of(rawFile).width(150).toFile(thumbnailFile);
+			Thumbnails.of(rawFile).width(1024).toFile(photoFile);
+			return true;
+		} catch (IOException e) {
+			LOG.log(Level.WARNING, "Can't create thumbnails", e);
+			return false;
 		}
 	}
 
 	public OutputStream getOutputStream() throws FileNotFoundException {
-		return new FileOutputStream(file);
+		return new FileOutputStream(rawFile);
 	}
 
 	@Override
@@ -80,39 +75,38 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 
 	@Override
 	public Resource getResource() {
-		return new FileResource(file);
+		return new FileResource(photoFile);
 	}
 
 	@Override
 	public Resource getThumbnailResource() {
-		return new FileResource(thumbnail);
+		return new FileResource(thumbnailFile);
 	}
 
 	@Override
 	public DBObject getFileReferences() throws IOException {
-		GridFSInputFile inputFile = dbProvider.getGridFS().createFile(file);
-		inputFile.setFilename(fileName);
-		inputFile.setContentType(mimeType);
-		inputFile.save();
+		GridFSInputFile photoGridFile = dbProvider.getGridFS().createFile(photoFile);
+		photoGridFile.setFilename(fileName);
+		photoGridFile.setContentType(mimeType);
+		photoGridFile.save();
 
-		GridFSInputFile thumbnailFile = dbProvider.getGridFS().createFile(thumbnail);
-		thumbnailFile.setFilename("thumb_" + fileName);
-		thumbnailFile.setContentType(mimeType);
-		thumbnailFile.save();
+		GridFSInputFile thumbnailGridFile = dbProvider.getGridFS().createFile(thumbnailFile);
+		thumbnailGridFile.setFilename("thumb_" + fileName);
+		thumbnailGridFile.setContentType(mimeType);
+		thumbnailGridFile.save();
 
 		DBObject o = new BasicDBObject();
-		o.put("photo_id", inputFile.getId());
-		o.put("thumbnail_id", thumbnailFile.getId());
+		o.put("photo_id", photoGridFile.getId());
+		o.put("thumbnail_id", thumbnailGridFile.getId());
 		return o;
 	}
 
 	@Override
 	public void remove() {
-		if (file.exists()) {
-			file.delete();
-		}
-		if (thumbnail.exists()) {
-			thumbnail.delete();
+		for (File f : new File[] { rawFile, photoFile, thumbnailFile }) {
+			if (f.exists()) {
+				f.delete();
+			}
 		}
 	}
 

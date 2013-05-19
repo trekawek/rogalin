@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 
+import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
@@ -16,17 +17,19 @@ import com.vaadin.ui.themes.Runo;
  */
 @SuppressWarnings("serial")
 @Theme("runo")
+@PreserveOnRefresh
 public class RogalinUI extends UI {
 
-	private final MongoDbProvider dbProvider;
-
-	public RogalinUI() throws UnknownHostException {
-		super();
-		this.dbProvider = new MongoDbProvider();
-	}
+	private MongoDbProvider dbProvider = new MongoDbProvider();
 
 	@Override
 	protected void init(VaadinRequest request) {
+		try {
+			dbProvider.connect();
+		} catch (UnknownHostException e) {
+			throw new RuntimeException("Can't connect to mongo", e);
+		}
+
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(true);
 		setContent(layout);
@@ -43,5 +46,11 @@ public class RogalinUI extends UI {
 
 		TabsController tabsController = new TabsController(dbProvider);
 		layout.addComponent(tabsController.getTabs());
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		dbProvider.close();
 	}
 }

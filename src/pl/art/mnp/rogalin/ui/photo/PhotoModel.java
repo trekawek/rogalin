@@ -1,4 +1,4 @@
-package pl.art.mnp.rogalin.ui.tab.object.photo;
+package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.IOException;
 

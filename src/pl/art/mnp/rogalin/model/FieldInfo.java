@@ -2,7 +2,6 @@ package pl.art.mnp.rogalin.model;
 
 import com.mongodb.DBObject;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.TextArea;
 
 import pl.art.mnp.rogalin.db.MongoDbProvider;
 import pl.art.mnp.rogalin.ui.field.UiField;
@@ -36,13 +35,6 @@ public enum FieldInfo {
 		@Override
 		public boolean isBelowColumns() {
 			return true;
-		}
-		
-		@Override
-		public void setComponentProperties(Component c) {
-			TextArea t= (TextArea)c;
-			t.setColumns(40);
-			t.setRows(6);
 		}
 	};
 //@formatter:on
