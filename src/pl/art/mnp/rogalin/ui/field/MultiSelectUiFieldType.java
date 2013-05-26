@@ -5,8 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.db.FieldInfo;
+import pl.art.mnp.rogalin.db.predicate.MultiSelectPredicate;
+import pl.art.mnp.rogalin.db.predicate.Predicate;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -14,13 +15,14 @@ import com.mongodb.DBObject;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class MultiSelectUiField extends AbstractUiField {
+public class MultiSelectUiFieldType extends AbstractUiFieldType {
 
 	private final VerticalLayout layout;
 
@@ -30,17 +32,18 @@ public class MultiSelectUiField extends AbstractUiField {
 
 	private final TextField other;
 
-	public MultiSelectUiField(FieldInfo field, MongoDbProvider dbProvider) {
-		super(field, dbProvider);
+	public MultiSelectUiFieldType(FieldInfo field, List<String> options, boolean search) {
+		super(field);
 		layout = new VerticalLayout();
 		layout.setCaption(field.toString());
 
-		List<String> options = dbProvider.getOptionsProvider().getOptions(field);
 		optionGroup = new OptionGroup(null, options);
 		optionGroup.setNullSelectionAllowed(true);
 		optionGroup.setNewItemsAllowed(false);
 		optionGroup.setMultiSelect(true);
-		optionGroup.setRequired(field.isRequired());
+		if (!search) {
+			optionGroup.setRequired(field.isRequired());
+		}
 		optionGroup.setValidationVisible(true);
 		optionGroup.setRequiredError(EMPTY_FIELD_ERROR);
 		layout.addComponent(optionGroup);
@@ -61,17 +64,14 @@ public class MultiSelectUiField extends AbstractUiField {
 		otherLayout.setSpacing(true);
 		otherLayout.addComponent(otherBox);
 		otherLayout.addComponent(other);
-		layout.addComponent(otherLayout);
-	}
-
-	@Override
-	public VerticalLayout getComponent() {
-		return layout;
+		if (!search) {
+			layout.addComponent(otherLayout);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Object serializeToMongo() {
+	public Object getDbObject() {
 		DBObject o = new BasicDBObject();
 		BasicDBList values = new BasicDBList();
 		values.addAll((Set<String>) optionGroup.getValue());
@@ -84,11 +84,11 @@ public class MultiSelectUiField extends AbstractUiField {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deserializeFromMongo(DBObject object) {
+	public void setFromDbObject(DBObject object) {
 		if (object == null) {
 			return;
 		}
-		DBObject o = (DBObject) object.get(field.name());
+		DBObject o = (DBObject) object.get(fieldInfo.name());
 		Collection<String> values = (Collection<String>) o.get("values");
 		if (values == null) {
 			return;
@@ -115,4 +115,19 @@ public class MultiSelectUiField extends AbstractUiField {
 		otherBox.setValue(false);
 		other.setValue("");
 	}
+
+	@Override
+	public Component getComponent() {
+		return layout;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Predicate getPredicate() {
+		if (optionGroup.getValue() == null) {
+			return DUMMY_PREDICATE;
+		}
+		return new MultiSelectPredicate((Collection<String>) optionGroup.getValue(), fieldInfo.name());
+	}
+
 }

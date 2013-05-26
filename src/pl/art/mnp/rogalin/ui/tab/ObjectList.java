@@ -8,9 +8,10 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.vaadin.dialogs.ConfirmDialog;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
+import pl.art.mnp.rogalin.db.DbConnection;
+import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.ObjectsDao;
-import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.db.predicate.Predicate;
 
 import com.mongodb.DBObject;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -24,13 +25,14 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
 @SuppressWarnings("serial")
-public class ObjectList extends VerticalLayout implements Handler, SaveActionListener {
+public class ObjectList extends VerticalLayout implements Handler {
 
 	private static final Action PREVIEW = new Action("Zobacz");
 
@@ -45,18 +47,16 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 
 	private final VerticalLayout layout;
 
-	private final ObjectsDao objectDao;
+	private Label filterInfo;
 
-	private final MongoDbProvider dbProvider;
+	private List<Predicate> predicates;
 
 	private String query;
 
 	private Table table;
 
-	public ObjectList(MongoDbProvider dbProvider) {
+	public ObjectList() {
 		super();
-		this.dbProvider = dbProvider;
-		this.objectDao = dbProvider.getObjectsProvider();
 
 		setMargin(true);
 		setSpacing(true);
@@ -90,10 +90,16 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 		resetSearch.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				searchText.setValue("");
+				predicates = null;
+				if (StringUtils.isEmpty(searchText.getValue())) {
+					refreshTable();
+				} else {
+					searchText.setValue("");
+				}
 			}
 		});
-		layout.addComponents(searchText, searchButton, resetSearch);
+		filterInfo = new Label("");
+		layout.addComponents(searchText, searchButton, resetSearch, filterInfo);
 		return layout;
 	}
 
@@ -121,7 +127,7 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 			@Override
 			public void itemClick(ItemClickEvent event) {
 				if (event.isDoubleClick()) {
-					DBObject object = objectDao.getObject(event.getItemId());
+					DBObject object = DbConnection.getInstance().getObjectsDao().getObject(event.getItemId());
 					showPreview(object);
 				}
 			}
@@ -138,20 +144,39 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 	public void refreshTable() {
 		table.removeAllItems();
 		List<DBObject> objects;
+		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
 		if (StringUtils.isEmpty(query)) {
 			objects = objectDao.getObjectList();
 		} else {
 			objects = objectDao.getFilteredObjectList(query);
 		}
+		int i = 0;
 		for (DBObject o : objects) {
-			table.addItem(createTableRow(o), o.get("_id"));
+			if (matchesPredicates(o)) {
+				i++;
+				table.addItem(createTableRow(o), o.get("_id"));
+			}
 		}
+		filterInfo.setValue(String.format("Ilość rezultatów: %d. %s", i, predicates == null ? ""
+				: "Wyniki podlegają filtrowaniu."));
+	}
+
+	private boolean matchesPredicates(DBObject o) {
+		if (predicates == null) {
+			return true;
+		}
+		for (Predicate p : predicates) {
+			if (!p.matches(o)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Object[] createTableRow(DBObject dbObject) {
 		List<Object> properties = new ArrayList<Object>(FieldInfo.values().length);
 		for (FieldInfo f : FieldInfo.values()) {
-			properties.add(f.getStringValue(dbObject));
+			properties.add(f.getFieldType().getValue(dbObject));
 		}
 		return properties.toArray();
 	}
@@ -172,7 +197,7 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 	@Override
 	public void handleAction(Action action, Object sender, Object target) {
 		if (sender == table) {
-			DBObject object = objectDao.getObject(target);
+			DBObject object = DbConnection.getInstance().getObjectsDao().getObject(target);
 			if (action == PREVIEW) {
 				showPreview(object);
 			} else if (action == EDIT) {
@@ -193,7 +218,7 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 		back.addClickListener(showTable);
 		addComponent(back);
 
-		ObjectPreview preview = new ObjectPreview(object, objectDao);
+		ObjectPreview preview = new ObjectPreview(object);
 		addComponent(preview);
 	}
 
@@ -207,7 +232,14 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 		back.addClickListener(showTable);
 		addComponent(back);
 
-		ObjectForm objectForm = new ObjectForm(dbProvider, this, object);
+		ObjectForm objectForm = new ObjectForm(new SaveActionListener() {
+			@Override
+			public void onSaveAction() {
+				refreshTable();
+				removeAllComponents();
+				addComponent(layout);
+			}
+		}, object);
 		addComponent(objectForm);
 	}
 
@@ -220,17 +252,14 @@ public class ObjectList extends VerticalLayout implements Handler, SaveActionLis
 							return;
 						}
 						if (object != null) {
-							objectDao.removeObject(object);
+							DbConnection.getInstance().getObjectsDao().removeObject(object);
 							refreshTable();
 						}
 					}
 				});
 	}
 
-	@Override
-	public void onSaveAction() {
-		refreshTable();
-		removeAllComponents();
-		addComponent(layout);
+	public void setPredicates(List<Predicate> predicates) {
+		this.predicates = predicates;
 	}
 }

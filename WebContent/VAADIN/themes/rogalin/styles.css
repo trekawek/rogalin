@@ -1,0 +1,13 @@
+@import "../runo/legacy-styles.css";
+
+.v-label-desc {
+	color: green;
+}
+
+.object-preview .v-label {
+	font-size: 14px;
+}
+
+.object-preview .v-caption {
+	font-size: 12px;
+}

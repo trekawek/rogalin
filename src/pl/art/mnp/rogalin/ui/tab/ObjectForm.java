@@ -1,17 +1,23 @@
 package pl.art.mnp.rogalin.ui.tab;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bson.types.ObjectId;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.model.FieldInfo;
-import pl.art.mnp.rogalin.ui.field.UiField;
+import pl.art.mnp.rogalin.db.DbConnection;
+import pl.art.mnp.rogalin.db.FieldInfo;
+import pl.art.mnp.rogalin.db.ObjectsDao;
+import pl.art.mnp.rogalin.field.FieldType;
+import pl.art.mnp.rogalin.ui.field.UiFieldType;
 import pl.art.mnp.rogalin.ui.photo.PhotoContainer;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
@@ -26,24 +32,23 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class ObjectForm extends VerticalLayout {
 
-	private final List<UiField> fields = new ArrayList<UiField>(FieldInfo.values().length);
+	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
+
+	private final Map<FieldInfo, UiFieldType> dependentFields = new HashMap<FieldInfo, UiFieldType>();
 
 	private final PhotoContainer photoContainer;
-
-	private final MongoDbProvider dbProvider;
 
 	private final SaveActionListener saveAction;
 
 	private final DBObject editedObject;
 
-	public ObjectForm(MongoDbProvider dbProvider, SaveActionListener saveAction) {
-		this(dbProvider, saveAction, null);
+	public ObjectForm(SaveActionListener saveAction) {
+		this(saveAction, null);
 	}
 
-	public ObjectForm(MongoDbProvider dbProvider, SaveActionListener saveAction, DBObject object) {
+	public ObjectForm(SaveActionListener saveAction, DBObject object) {
 		super();
 		this.editedObject = object;
-		this.dbProvider = dbProvider;
 		this.saveAction = saveAction;
 
 		GridLayout columns = new GridLayout(2, 1);
@@ -58,23 +63,34 @@ public class ObjectForm extends VerticalLayout {
 
 		int i = 0;
 		for (FieldInfo f : FieldInfo.values()) {
-			UiField uiField = f.getUiField(dbProvider);
-			uiField.deserializeFromMongo(object);
-			fields.add(uiField);
+			FieldType fieldType = f.getFieldType();
+			UiFieldType formField = fieldType.getFormField();
+			formField.setFromDbObject(object);
+			fields.put(f, formField);
+			if (f.getDependsOn() != null) {
+				FieldInfo dependsOn = f.getDependsOn();
+				dependentFields.put(dependsOn, formField);
+				boolean visible = false;
+				if (object != null) {
+					visible = f.isVisible(object.get(dependsOn.name()));
+				}
+				formField.setEnabled(visible);
+			}
 
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
-			} else if (i <= 19) {
+			} else if (i <= 22) {
 				container = leftColumn;
 				i++;
 			} else {
 				container = rightColumn;
 			}
-			container.addComponent(uiField.getComponent());
+			container.addComponent(formField.getComponent());
 		}
+		setDependencies();
 
-		photoContainer = new PhotoContainer(dbProvider, object);
+		photoContainer = new PhotoContainer(object);
 		addComponent(photoContainer);
 
 		Button button = new Button("Zapisz obiekt");
@@ -85,32 +101,43 @@ public class ObjectForm extends VerticalLayout {
 			}
 		});
 		addComponent(button);
+	}
 
+	private void setDependencies() {
+		for (final Entry<FieldInfo, UiFieldType> entry : fields.entrySet()) {
+			if (dependentFields.containsKey(entry.getKey())) {
+				entry.getValue().addOnChangeListener(new ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						UiFieldType dependentField = dependentFields.get(entry.getKey());
+						boolean visible = entry.getKey().isVisible(event.getProperty().getValue());
+						dependentField.setEnabled(visible);
+					}
+				});
+			}
+		}
 	}
 
 	private void saveObject() {
-		boolean validated = true;
-		for (UiField field : fields) {
+		for (Entry<FieldInfo, UiFieldType> entry : fields.entrySet()) {
 			try {
-				field.validate();
+				entry.getValue().validate();
 			} catch (InvalidValueException e) {
-				validated = false;
+				Notification.show(String.format("%s: %s", entry.getKey().toString(), e.getMessage()),
+						Type.ERROR_MESSAGE);
+				return;
 			}
 		}
-		if (!validated) {
-			Notification.show("Uzupełnij wszystkie wymagane pola.", Type.ERROR_MESSAGE);
-			return;
-		}
 		BasicDBList photos = photoContainer.serializePhotos();
+		ObjectsDao dao = DbConnection.getInstance().getObjectsDao();
 		if (editedObject == null) {
-			dbProvider.getObjectsProvider().addObject(fields, photos);
+			dao.addObject(fields, photos);
 		} else {
-			dbProvider.getObjectsProvider().updateObject(fields, photos, (ObjectId) editedObject.get("_id"));
-
+			dao.updateObject(fields, photos, (ObjectId) editedObject.get("_id"));
 		}
 		Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
 		saveAction.onSaveAction();
-		for (UiField field : fields) {
+		for (UiFieldType field : fields.values()) {
 			field.clear();
 			photoContainer.clear();
 		}

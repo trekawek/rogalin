@@ -3,9 +3,8 @@ package pl.art.mnp.rogalin.ui.tab;
 import java.util.ArrayList;
 import java.util.List;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.db.OptionsDao;
-import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.db.DbConnection;
+import pl.art.mnp.rogalin.db.FieldInfo;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -25,22 +24,19 @@ public class OptionsTab extends VerticalLayout {
 
 	private final ListSelect listSelect;
 
-	private final OptionsDao optionsProvider;
-
 	private final TextField newTextField;
 
 	private FieldInfo selectedField;
 
 	private List<String> options;
 
-	public OptionsTab(MongoDbProvider dbProvider) {
+	public OptionsTab() {
 		super();
-		this.optionsProvider = dbProvider.getOptionsProvider();
 
 		setMargin(true);
 		List<FieldInfo> listFields = new ArrayList<FieldInfo>();
 		for (FieldInfo f : FieldInfo.values()) {
-			if (f.getFieldType().isList()) {
+			if (f.getFieldType().hasOptions()) {
 				listFields.add(f);
 			}
 		}
@@ -54,11 +50,12 @@ public class OptionsTab extends VerticalLayout {
 		fieldSelect.setNewItemsAllowed(false);
 		fieldSelect.setTextInputAllowed(false);
 		fieldSelect.setPageLength(0);
+
 		fieldSelect.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				selectedField = (FieldInfo) event.getProperty().getValue();
-				options = optionsProvider.getOptions(selectedField);
+				options = DbConnection.getInstance().getOptionsDao().getOptions(selectedField);
 				updateListSelect(false);
 			}
 		});
@@ -135,8 +132,7 @@ public class OptionsTab extends VerticalLayout {
 			options.set(i, options.get(i - 1));
 			options.set(i - 1, value);
 		}
-		optionsProvider.saveOptions(selectedField, options);
-		updateListSelect(true);
+		saveAndUpdate(selectedField, options, true);
 	}
 
 	private void down() {
@@ -146,8 +142,7 @@ public class OptionsTab extends VerticalLayout {
 			options.set(i, options.get(i + 1));
 			options.set(i + 1, value);
 		}
-		optionsProvider.saveOptions(selectedField, options);
-		updateListSelect(true);
+		saveAndUpdate(selectedField, options, true);
 	}
 
 	private void add() {
@@ -168,15 +163,18 @@ public class OptionsTab extends VerticalLayout {
 		} else {
 			options.add(i + 1, newValue);
 		}
-		optionsProvider.saveOptions(selectedField, options);
-		updateListSelect(false);
+		saveAndUpdate(selectedField, options, false);
 		listSelect.select(newValue);
 	}
 
 	private void delete() {
 		String value = (String) listSelect.getValue();
 		options.remove(value);
-		optionsProvider.saveOptions(selectedField, options);
-		updateListSelect(false);
+		saveAndUpdate(selectedField, options, false);
+	}
+
+	private void saveAndUpdate(FieldInfo field, List<String> options, boolean rememberSelection) {
+		DbConnection.getInstance().getOptionsDao().saveOptions(selectedField, options);
+		updateListSelect(rememberSelection);
 	}
 }

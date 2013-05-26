@@ -1,7 +1,7 @@
 package pl.art.mnp.rogalin.ui.tab;
 
-import pl.art.mnp.rogalin.db.ObjectsDao;
-import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.db.DbConnection;
+import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
 import com.mongodb.DBObject;
@@ -15,8 +15,9 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class ObjectPreview extends VerticalLayout {
 
-	public ObjectPreview(DBObject dbObject, ObjectsDao objectProvider) {
+	public ObjectPreview(DBObject dbObject) {
 		super();
+		this.setStyleName("object-preview");
 		GridLayout columns = new GridLayout(2, 1);
 		columns.setSpacing(true);
 		FormLayout leftColumn = new FormLayout();
@@ -32,22 +33,28 @@ public class ObjectPreview extends VerticalLayout {
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
-			} else if (i <= 12) {
+			} else if (i <= 14) {
 				container = leftColumn;
 				i++;
 			} else {
 				container = rightColumn;
 			}
 
-			Label field = new Label();
-			field.setCaption(f.toString());
-			field.setValue(f.getStringValue(dbObject));
-			container.addComponent(field);
+			boolean visible = true;
+			if (f.getDependsOn() != null) {
+				Object value = dbObject.get(f.getDependsOn().name());
+				if (!f.isVisible(value)) {
+					visible = false;
+				}
+			}
+			if (visible) {
+				container.addComponent(f.getFieldType().getPreviewField(dbObject));
+			}
 		}
 
 		GridLayout photos = new GridLayout(4, 1);
 		photos.setSpacing(true);
-		for (DbPhoto p : objectProvider.getPhotos(dbObject)) {
+		for (DbPhoto p : DbConnection.getInstance().getObjectsDao().getPhotos(dbObject)) {
 			photos.addComponent(renderPhoto(p));
 		}
 		addComponent(photos);

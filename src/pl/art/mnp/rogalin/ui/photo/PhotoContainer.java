@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
+import pl.art.mnp.rogalin.db.DbConnection;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -39,17 +39,14 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 
 	private final Map<String, UploadedPhoto> tempImages = new LinkedHashMap<String, UploadedPhoto>();
 
-	private final MongoDbProvider dbProvider;
-
 	private Map<String, PhotoComponent> components;
 
 	private Label imageLabel;
 
-	public PhotoContainer(MongoDbProvider dbProvider, DBObject object) {
+	public PhotoContainer(DBObject object) {
 		super();
-		this.dbProvider = dbProvider;
 		this.components = Collections.emptyMap();
-		imageLabel = new Label("Zdjęcia");
+		imageLabel = new Label("Fotografie");
 		imageLabel.addStyleName(Runo.LABEL_H2);
 		imageLabel.setSizeUndefined();
 		imageLabel.setVisible(false);
@@ -59,7 +56,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		imageContainer.setSpacing(true);
 		addComponent(imageContainer);
 
-		Label title = new Label("Dodaj zdjęcie");
+		Label title = new Label("Dodaj fotografię");
 		title.addStyleName(Runo.LABEL_H2);
 		title.setSizeUndefined();
 		addComponent(title);
@@ -71,7 +68,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		addComponent(upload);
 
 		if (object != null) {
-			showExistingImages(dbProvider.getObjectsProvider().getPhotos(object));
+			showExistingImages(DbConnection.getInstance().getObjectsDao().getPhotos(object));
 			updateImages();
 		}
 	}
@@ -123,7 +120,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	@Override
 	public OutputStream receiveUpload(String filename, String mimeType) {
 		try {
-			UploadedPhoto uploaded = new UploadedPhoto(filename, mimeType, dbProvider);
+			UploadedPhoto uploaded = new UploadedPhoto(filename, mimeType);
 			tempImages.put(filename, uploaded);
 			components.remove(filename);
 			return uploaded.getOutputStream();
@@ -140,7 +137,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 			images.put(photo.getFileName(), photo);
 			updateImages();
 		} else {
-			Notification.show("Nie można zapisać zdjęcia", Type.ERROR_MESSAGE);
+			Notification.show("Nie można zapisać fotografii", Type.ERROR_MESSAGE);
 		}
 	}
 

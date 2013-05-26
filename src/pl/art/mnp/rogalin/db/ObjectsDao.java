@@ -1,14 +1,15 @@
 package pl.art.mnp.rogalin.db;
 
 import java.io.FileNotFoundException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.bson.types.ObjectId;
 
-import pl.art.mnp.rogalin.ui.field.UiField;
+import pl.art.mnp.rogalin.ui.field.UiFieldType;
 import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
 import com.mongodb.BasicDBList;
@@ -18,16 +19,15 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 
-@SuppressWarnings("serial")
-public class ObjectsDao implements Serializable {
+public class ObjectsDao {
 
 	protected static final Logger LOG = Logger.getLogger(ObjectsDao.class.getName());
 
 	private static final String OBJECTS = "objects";
 
-	private MongoDbProvider dbProvider;
+	private DbConnection dbProvider;
 
-	ObjectsDao(MongoDbProvider dbProvider) {
+	ObjectsDao(DbConnection dbProvider) {
 		this.dbProvider = dbProvider;
 	}
 
@@ -42,7 +42,7 @@ public class ObjectsDao implements Serializable {
 
 		final DBObject textSearchCommand = new BasicDBObject();
 		textSearchCommand.put("text", OBJECTS);
-		textSearchCommand.put("search", query);
+		textSearchCommand.put("search", String.format("\"%s\"", query));
 		textSearchCommand.put("project", new BasicDBObject("_id", 1));
 		final CommandResult commandResult = dbProvider.getMongoDb().command(textSearchCommand);
 		@SuppressWarnings("unchecked")
@@ -64,22 +64,22 @@ public class ObjectsDao implements Serializable {
 		return collection.findOne(ref);
 	}
 
-	public void addObject(List<UiField> fields, BasicDBList photos) {
+	public void addObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos) {
 		DBObject object = createDbObjectFromFields(fields, photos);
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.insert(object);
 	}
 
-	private DBObject createDbObjectFromFields(List<UiField> fields, BasicDBList photos) {
+	private DBObject createDbObjectFromFields(Map<FieldInfo, UiFieldType> fields, BasicDBList photos) {
 		DBObject object = new BasicDBObject();
-		for (UiField field : fields) {
-			object.put(field.getFieldInfo().name(), field.serializeToMongo());
+		for (Entry<FieldInfo, UiFieldType> entry : fields.entrySet()) {
+			object.put(entry.getKey().name(), entry.getValue().getDbObject());
 		}
 		object.put("photos", photos);
 		return object;
 	}
 
-	public void updateObject(List<UiField> fields, BasicDBList photos, ObjectId id) {
+	public void updateObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos, ObjectId id) {
 		DBObject newObject = createDbObjectFromFields(fields, photos);
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.update(new BasicDBObject("_id", id), newObject);
@@ -100,7 +100,7 @@ public class ObjectsDao implements Serializable {
 		List<DbPhoto> photos = new ArrayList<DbPhoto>();
 		for (DBObject photo : (List<DBObject>) object.get("photos")) {
 			try {
-				photos.add(new DbPhoto(photo, dbProvider));
+				photos.add(new DbPhoto(photo));
 			} catch (FileNotFoundException e) {
 				continue;
 			}

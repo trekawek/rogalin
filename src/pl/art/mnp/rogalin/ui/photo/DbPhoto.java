@@ -2,45 +2,41 @@ package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.Serializable;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
+import org.bson.types.ObjectId;
+
+import pl.art.mnp.rogalin.db.DbConnection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
+import com.mongodb.util.JSON;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
 
 @SuppressWarnings("serial")
-public class DbPhoto implements PhotoModel {
-
-	private final GridFSDBFile file;
-
-	private GridFSDBFile thumbnail;
+public class DbPhoto implements PhotoModel, Serializable {
 
 	private final PhotoType type;
 
-	private final DBObject references;
+	private final String references;
 
-	private final MongoDbProvider dbProvider;
+	private final String fileName;
 
-	public DbPhoto(DBObject photo, MongoDbProvider dbProvider) throws FileNotFoundException {
-		this.dbProvider = dbProvider;
+	private final ObjectId photoId;
 
-		references = (DBObject) photo.get("references");
+	private final ObjectId thumbnailId;
 
-		GridFS gridFS = dbProvider.getGridFS();
-		file = gridFS.findOne(new BasicDBObject("_id", references.get("photo_id")));
-		thumbnail = gridFS.findOne(new BasicDBObject("_id", references.get("thumbnail_id")));
+	public DbPhoto(DBObject dbObject) throws FileNotFoundException {
+		references = dbObject.get("references").toString();
+		type = PhotoType.valueOf((String) dbObject.get("type"));
+		photoId = (ObjectId) getFileReferences().get("photo_id");
+		thumbnailId = (ObjectId) getFileReferences().get("thumbnail_id");
 
-		if (file == null) {
-			throw new FileNotFoundException();
-		}
-		if (thumbnail == null) {
-			thumbnail = file;
-		}
-		type = PhotoType.valueOf((String) photo.get("type"));
+		GridFS gridFS = DbConnection.getInstance().getGridFS();
+		fileName = gridFS.findOne(getThumbnailReference()).getFilename();
 	}
 
 	@Override
@@ -50,29 +46,31 @@ public class DbPhoto implements PhotoModel {
 
 	@Override
 	public Resource getResource() {
-		return new GridFsFileSource(file);
+		GridFS gridFS = DbConnection.getInstance().getGridFS();
+		return new GridFsFileSource(gridFS.findOne(getPhotoReference()));
 	}
 
 	@Override
 	public Resource getThumbnailResource() {
-		return new GridFsFileSource(thumbnail);
+		GridFS gridFS = DbConnection.getInstance().getGridFS();
+		return new GridFsFileSource(gridFS.findOne(getThumbnailReference()));
 	}
 
 	@Override
 	public String getFileName() {
-		return file.getFilename();
+		return fileName;
 	}
 
 	@Override
 	public DBObject getFileReferences() {
-		return references;
+		return (DBObject) JSON.parse(references);
 	}
 
 	@Override
 	public void remove() {
-		GridFS gridFs = dbProvider.getGridFS();
-		gridFs.remove(new BasicDBObject("_id", file.getId()));
-		gridFs.remove(new BasicDBObject("_id", thumbnail.getId()));
+		GridFS gridFs = DbConnection.getInstance().getGridFS();
+		gridFs.remove(getPhotoReference());
+		gridFs.remove(getThumbnailReference());
 	}
 
 	@Override
@@ -89,4 +87,13 @@ public class DbPhoto implements PhotoModel {
 			}, file.getFilename());
 		}
 	}
+
+	private DBObject getPhotoReference() {
+		return new BasicDBObject("_id", photoId);
+	}
+
+	private DBObject getThumbnailReference() {
+		return new BasicDBObject("_id", thumbnailId);
+	}
+
 }

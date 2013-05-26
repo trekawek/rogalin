@@ -2,31 +2,29 @@ package pl.art.mnp.rogalin.ui.field;
 
 import java.util.List;
 
-import pl.art.mnp.rogalin.db.MongoDbProvider;
-import pl.art.mnp.rogalin.db.OptionsDao;
-import pl.art.mnp.rogalin.model.FieldInfo;
+import pl.art.mnp.rogalin.db.DbConnection;
+import pl.art.mnp.rogalin.db.FieldInfo;
 
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Component;
 
 @SuppressWarnings("serial")
-public class ComboBoxUiField extends AbstractUiField {
+public class ComboBoxUiFieldType extends AbstractUiFieldType {
 
 	private final ComboBox comboBox;
 
-	private final OptionsDao optionsDao;
-
-	public ComboBoxUiField(final FieldInfo field, MongoDbProvider dbProvider) {
-		super(field, dbProvider);
-		this.optionsDao = dbProvider.getOptionsProvider();
-		List<String> options = dbProvider.getOptionsProvider().getOptions(field);
+	public ComboBoxUiFieldType(final FieldInfo field, List<String> options, boolean search) {
+		super(field);
 		comboBox = new ComboBox(null, options);
 		comboBox.setCaption(field.toString());
 		comboBox.setNullSelectionAllowed(false);
 		comboBox.setNewItemsAllowed(true);
 		comboBox.setImmediate(true);
 		comboBox.setPageLength(0);
-		comboBox.setRequired(field.isRequired());
+		if (!search) {
+			comboBox.setRequired(field.isRequired());
+		}
 		comboBox.setValidationVisible(true);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
 		comboBox.setNewItemHandler(new AbstractSelect.NewItemHandler() {
@@ -34,14 +32,14 @@ public class ComboBoxUiField extends AbstractUiField {
 			public void addNewItem(String caption) {
 				LOG.info("New option: " + caption);
 				comboBox.addItem(caption);
-				optionsDao.addOption(field, caption);
+				DbConnection.getInstance().getOptionsDao().addOption(field, caption);
 				comboBox.select(caption);
 			}
 		});
 	}
 
 	@Override
-	public ComboBox getComponent() {
+	public Component getComponent() {
 		return comboBox;
 	}
 }
