@@ -103,6 +103,7 @@ public class SearchTab extends VerticalLayout {
 	}
 
 	private void clear() {
+		noPhotoCheckbox.setValue(false);
 		for (UiFieldType field : fields) {
 			field.clear();
 		}
@@ -113,6 +114,5 @@ public class SearchTab extends VerticalLayout {
 		public boolean matches(DBObject dbObject) {
 			return DbConnection.getInstance().getObjectsDao().getPhotos(dbObject).isEmpty();
 		}
-
 	};
 }

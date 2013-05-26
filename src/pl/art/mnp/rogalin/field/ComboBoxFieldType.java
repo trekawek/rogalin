@@ -1,6 +1,7 @@
 package pl.art.mnp.rogalin.field;
 
 import pl.art.mnp.rogalin.db.FieldInfo;
+import pl.art.mnp.rogalin.ui.field.ComboBoxUiFieldType;
 import pl.art.mnp.rogalin.ui.field.SelectUiFieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
 
@@ -13,7 +14,7 @@ public class ComboBoxFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getFormField() {
-		return new SelectUiFieldType(field, getOptions(), false);
+		return new ComboBoxUiFieldType(field, getOptions(), false);
 	}
 
 	@Override
