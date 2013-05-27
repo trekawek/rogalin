@@ -1,24 +1,34 @@
 package pl.art.mnp.rogalin.ui.tab;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
+import pl.art.mnp.rogalin.db.ObjectsDao;
+import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
+import com.mongodb.DBObject;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.ListSelect;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 
 @SuppressWarnings("serial")
 public class OptionsTab extends VerticalLayout {
+
+	protected static final Logger LOG = Logger.getLogger(OptionsTab.class.getName());
 
 	private final ComboBox fieldSelect;
 
@@ -109,6 +119,35 @@ public class OptionsTab extends VerticalLayout {
 
 		newTextField = new TextField("Nowa wartość:");
 		formLayout.addComponent(newTextField);
+
+		addComponent(new HorizontalSplitPanel());
+		Button createThumbnails = new Button("Generuj miniatury");
+		createThumbnails.setImmediate(true);
+		createThumbnails.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				generateThumbnails();
+			}
+		});
+		addComponent(createThumbnails);
+	}
+
+	private static void generateThumbnails() {
+		DbConnection connection = DbConnection.getInstance();
+		ObjectsDao dao = connection.getObjectsDao();
+		try {
+			for (DBObject o : dao.getObjectList()) {
+				LOG.info((String) o.get(FieldInfo.NAME.name()));
+				List<DbPhoto> photos = dao.getPhotos(o);
+				for (DbPhoto p : photos) {
+					p.generateThumbnail();
+				}
+			}
+			Notification.show("Wygenerowano minitaury", Notification.Type.HUMANIZED_MESSAGE);
+		} catch (IOException e) {
+			Notification.show("Wystąpił błąd", Notification.Type.ERROR_MESSAGE);
+			LOG.log(Level.WARNING, "Can't generate thumbnails", e);
+		}
 	}
 
 	private void updateListSelect(boolean rememberSelection) {

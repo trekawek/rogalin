@@ -6,6 +6,7 @@ import pl.art.mnp.rogalin.ui.field.TextUiFieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
 
 import com.mongodb.DBObject;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
 
 @SuppressWarnings("serial")
@@ -18,6 +19,7 @@ public class TextAreaFieldType extends AbstractFieldType {
 	@Override
 	public Label getPreviewField(DBObject o) {
 		Label label = super.getPreviewField(o);
+		label.setContentMode(ContentMode.PREFORMATTED);
 		if (field == FieldInfo.DESC) {
 			label.setStyleName("desc");
 		}

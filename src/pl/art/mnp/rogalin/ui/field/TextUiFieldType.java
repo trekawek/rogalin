@@ -13,10 +13,18 @@ public class TextUiFieldType extends AbstractUiFieldType {
 
 	private final TextField textField;
 
+	private final String defaultValue;
+
 	public TextUiFieldType(FieldInfo field, boolean search) {
+		this(field, search, null);
+	}
+
+	public TextUiFieldType(FieldInfo field, boolean search, String defaultValue) {
 		super(field);
+		this.defaultValue = StringUtils.defaultString(defaultValue);
 		textField = new TextField();
 		textField.setCaption(field.toString());
+		textField.setValue(this.defaultValue);
 		textField.setValidationVisible(true);
 		if (!search) {
 			textField.setRequired(field.isRequired());
@@ -26,7 +34,7 @@ public class TextUiFieldType extends AbstractUiFieldType {
 
 	@Override
 	public void clear() {
-		textField.setValue("");
+		textField.setValue(defaultValue);
 	}
 
 	@Override

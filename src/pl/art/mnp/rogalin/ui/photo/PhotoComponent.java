@@ -24,7 +24,6 @@ public class PhotoComponent extends VerticalLayout {
 		this.photoModel = photoModel;
 		Resource resource = photoModel.getThumbnailResource();
 		Image image = new Image(photoModel.getFileName(), resource);
-		image.setWidth("150px");
 		addComponent(image);
 
 		typeSelection = new ComboBox("Rodzaj");

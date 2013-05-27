@@ -7,37 +7,37 @@ public enum CenturyType {
 			return new Range(1, 100);
 		}
 	},
-	BEGIN("Początek") {
+	BEGIN("początek") {
 		@Override
 		public Range getRange() {
 			return new Range(1, 25);
 		}
 	},
-	FIRST_HALF("Pierwsza połowa") {
+	FIRST_HALF("pierwsza połowa") {
 		@Override
 		public Range getRange() {
 			return new Range(1, 50);
 		}
 	},
-	MID("Połowa") {
+	MID("połowa") {
 		@Override
 		public Range getRange() {
 			return new Range(45, 55);
 		}
 	},
-	SECOND_HALF("Druga połowa") {
+	SECOND_HALF("druga połowa") {
 		@Override
 		public Range getRange() {
 			return new Range(51, 100);
 		}
 	},
-	END("Koniec") {
+	END("koniec") {
 		@Override
 		public Range getRange() {
 			return new Range(75, 100);
 		}
 	},
-	TURN("Przełom") {
+	TURN("przełom") {
 		@Override
 		public Range getRange() {
 			return new Range(75, 125);

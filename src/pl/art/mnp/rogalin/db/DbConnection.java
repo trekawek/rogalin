@@ -56,14 +56,4 @@ public class DbConnection {
 	public ObjectsDao getObjectsDao() {
 		return new ObjectsDao(this);
 	}
-
-	/*public void close() {
-		LOG.info("Closing connection");
-		if (mongo != null) {
-			mongo.close();
-		}
-		mongo = null;
-		mongoDb = null;
-		gridFs = null;
-	}*/
 }

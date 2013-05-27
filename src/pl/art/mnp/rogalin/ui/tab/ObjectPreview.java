@@ -52,7 +52,7 @@ public class ObjectPreview extends VerticalLayout {
 			}
 		}
 
-		GridLayout photos = new GridLayout(4, 1);
+		GridLayout photos = new GridLayout(2, 1);
 		photos.setSpacing(true);
 		for (DbPhoto p : DbConnection.getInstance().getObjectsDao().getPhotos(dbObject)) {
 			photos.addComponent(renderPhoto(p));

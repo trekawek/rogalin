@@ -52,7 +52,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		imageLabel.setVisible(false);
 		addComponent(imageLabel);
 
-		imageContainer = new GridLayout(4, 1);
+		imageContainer = new GridLayout(2, 1);
 		imageContainer.setSpacing(true);
 		addComponent(imageContainer);
 

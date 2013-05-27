@@ -26,13 +26,7 @@ public enum FieldInfo {
 	AUTHOR("Autor", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new TextFieldType(this);
-		}
-	},
-	DATE("Data powstania (stara)", false, false) {
-		@Override
-		public FieldType getFieldType() {
-			return new TextFieldType(this, true);
+			return new TextFieldType(this, "nieznany", false);
 		}
 	},
 	DATE_OF_CREATION("Data powstania", false, true) {
@@ -81,19 +75,19 @@ public enum FieldInfo {
 			return new ComboBoxFieldType(this);
 		}
 	},
-	HEIGHT("Wysokość", false, true) {
+	HEIGHT("Wysokość (cm)", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
 		}
 	},
-	WIDTH("Szerokość", false, true) {
+	WIDTH("Szerokość (cm)", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
 		}
 	},
-	DEPTH("Głębokość", false, true) {
+	DEPTH("Głębokość (cm)", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);

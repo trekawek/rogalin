@@ -72,7 +72,12 @@ public enum DateType {
 			DBObject dbObject = (DBObject) object;
 			CenturyType centuryType = CenturyType.valueOf((String) dbObject.get("centuryType"));
 			Century century = new Century((Integer) dbObject.get("century"));
-			return String.format("%s %s w.", centuryType, century);
+			if (centuryType == CenturyType.TURN) {
+				Century nextCentury = new Century(century.getCentury() + 1);
+				return String.format("%s/%s w.", century, nextCentury);
+			} else {
+				return String.format("%s %s w.", centuryType, century);
+			}
 		}
 
 		@Override

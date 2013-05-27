@@ -1,17 +1,21 @@
 package pl.art.mnp.rogalin.ui.photo;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+
+import net.coobird.thumbnailator.Thumbnails;
 
 import org.bson.types.ObjectId;
 
 import pl.art.mnp.rogalin.db.DbConnection;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
+import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
@@ -25,6 +29,8 @@ public class DbPhoto implements PhotoModel, Serializable {
 
 	private final String fileName;
 
+	private final String thumbnailFileName;
+
 	private final ObjectId photoId;
 
 	private final ObjectId thumbnailId;
@@ -36,7 +42,8 @@ public class DbPhoto implements PhotoModel, Serializable {
 		thumbnailId = (ObjectId) getFileReferences().get("thumbnail_id");
 
 		GridFS gridFS = DbConnection.getInstance().getGridFS();
-		fileName = gridFS.findOne(getThumbnailReference()).getFilename();
+		fileName = gridFS.findOne(photoId).getFilename();
+		thumbnailFileName = gridFS.findOne(thumbnailId).getFilename();
 	}
 
 	@Override
@@ -46,14 +53,12 @@ public class DbPhoto implements PhotoModel, Serializable {
 
 	@Override
 	public Resource getResource() {
-		GridFS gridFS = DbConnection.getInstance().getGridFS();
-		return new GridFsFileSource(gridFS.findOne(getPhotoReference()));
+		return new GridFsFileSource(photoId, fileName);
 	}
 
 	@Override
 	public Resource getThumbnailResource() {
-		GridFS gridFS = DbConnection.getInstance().getGridFS();
-		return new GridFsFileSource(gridFS.findOne(getThumbnailReference()));
+		return new GridFsFileSource(thumbnailId, thumbnailFileName);
 	}
 
 	@Override
@@ -69,8 +74,8 @@ public class DbPhoto implements PhotoModel, Serializable {
 	@Override
 	public void remove() {
 		GridFS gridFs = DbConnection.getInstance().getGridFS();
-		gridFs.remove(getPhotoReference());
-		gridFs.remove(getThumbnailReference());
+		gridFs.remove(photoId);
+		gridFs.remove(thumbnailId);
 	}
 
 	@Override
@@ -78,22 +83,29 @@ public class DbPhoto implements PhotoModel, Serializable {
 	}
 
 	private static class GridFsFileSource extends StreamResource {
-		public GridFsFileSource(final GridFSDBFile file) {
+		public GridFsFileSource(final ObjectId fileId, final String filename) {
 			super(new StreamSource() {
 				@Override
 				public InputStream getStream() {
-					return file.getInputStream();
+					return DbConnection.getInstance().getGridFS().find(fileId).getInputStream();
 				}
-			}, file.getFilename());
+			}, filename);
 		}
 	}
 
-	private DBObject getPhotoReference() {
-		return new BasicDBObject("_id", photoId);
-	}
+	public void generateThumbnail() throws IOException {
+		GridFS gridFS = DbConnection.getInstance().getGridFS();
+		GridFSDBFile photoFile = gridFS.find(photoId);
 
-	private DBObject getThumbnailReference() {
-		return new BasicDBObject("_id", thumbnailId);
-	}
+		GridFSInputFile newThumbnail = gridFS.createFile();
+		newThumbnail.setFilename("thumb_" + photoFile.getFilename());
+		newThumbnail.setContentType(photoFile.getContentType());
+		newThumbnail.setId(thumbnailId);
+		gridFS.remove(thumbnailId);
 
+		OutputStream os = newThumbnail.getOutputStream();
+		Thumbnails.of(photoFile.getInputStream())
+				.size(UploadedPhoto.THUMBNAIL_WIDTH, UploadedPhoto.THUMBNAIL_HEIGHT).toOutputStream(os);
+		os.close();
+	}
 }

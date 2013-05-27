@@ -23,6 +23,10 @@ import com.vaadin.server.Resource;
 @SuppressWarnings("serial")
 public class UploadedPhoto implements Serializable, PhotoModel {
 
+	public static final int THUMBNAIL_WIDTH = 384;
+
+	public static final int THUMBNAIL_HEIGHT = 288;
+
 	private static final Logger LOG = Logger.getLogger(UploadedPhoto.class.getName());
 
 	static enum State {
@@ -49,7 +53,7 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 
 	public boolean createThumbnails() {
 		try {
-			Thumbnails.of(rawFile).size(150, 111).toFile(thumbnailFile);
+			Thumbnails.of(rawFile).size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT).toFile(thumbnailFile);
 			Thumbnails.of(rawFile).size(1024, 768).toFile(photoFile);
 			return true;
 		} catch (IOException e) {

@@ -105,12 +105,14 @@ public class ObjectForm extends VerticalLayout {
 
 	private void setDependencies() {
 		for (final Entry<FieldInfo, UiFieldType> entry : fields.entrySet()) {
-			if (dependentFields.containsKey(entry.getKey())) {
-				entry.getValue().addOnChangeListener(new ValueChangeListener() {
+			final FieldInfo fieldInfo = entry.getKey();
+			final UiFieldType uiFieldType = entry.getValue();
+			if (dependentFields.containsKey(fieldInfo)) {
+				uiFieldType.addOnChangeListener(new ValueChangeListener() {
 					@Override
 					public void valueChange(ValueChangeEvent event) {
-						UiFieldType dependentField = dependentFields.get(entry.getKey());
-						boolean visible = entry.getKey().isVisible(event.getProperty().getValue());
+						UiFieldType dependentField = dependentFields.get(fieldInfo);
+						boolean visible = fieldInfo.isVisible(event.getProperty().getValue());
 						dependentField.setEnabled(visible);
 					}
 				});
