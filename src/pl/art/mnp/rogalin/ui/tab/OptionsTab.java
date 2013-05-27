@@ -143,7 +143,7 @@ public class OptionsTab extends VerticalLayout {
 					p.generateThumbnail();
 				}
 			}
-			Notification.show("Wygenerowano minitaury", Notification.Type.HUMANIZED_MESSAGE);
+			Notification.show("Wygenerowano miniatury", Notification.Type.HUMANIZED_MESSAGE);
 		} catch (IOException e) {
 			Notification.show("Wystąpił błąd", Notification.Type.ERROR_MESSAGE);
 			LOG.log(Level.WARNING, "Can't generate thumbnails", e);
