@@ -2,6 +2,7 @@ package pl.art.mnp.rogalin.field;
 
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.ui.field.TextUiFieldType;
+import pl.art.mnp.rogalin.ui.field.TextWithDefaultUiFieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
 
 @SuppressWarnings("serial")
@@ -23,7 +24,7 @@ public class TextFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getFormField() {
-		UiFieldType f = new TextUiFieldType(field, false, defaultValue);
+		UiFieldType f = getTextUiFieldType(false);
 		if (disabled) {
 			f.getComponent().setEnabled(false);
 		}
@@ -32,7 +33,16 @@ public class TextFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getSearchField() {
-		UiFieldType f = new TextUiFieldType(field, true);
+		return getTextUiFieldType(true);
+	}
+
+	private UiFieldType getTextUiFieldType(boolean search) {
+		UiFieldType f;
+		if (defaultValue == null) {
+			f = new TextUiFieldType(field, search);
+		} else {
+			f = new TextWithDefaultUiFieldType(field, search, defaultValue);
+		}
 		return f;
 	}
 }

@@ -26,7 +26,7 @@ public abstract class AbstractUiFieldType implements UiFieldType {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private AbstractField getAbstractField() {
+	protected AbstractField getAbstractField() {
 		Component component = getComponent();
 		if (component instanceof AbstractField) {
 			return (AbstractField) component;

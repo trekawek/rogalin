@@ -24,6 +24,6 @@ public interface UiFieldType extends Serializable {
 
 	void setEnabled(boolean visible);
 
-	public Predicate getPredicate();
+	Predicate getPredicate();
 
 }

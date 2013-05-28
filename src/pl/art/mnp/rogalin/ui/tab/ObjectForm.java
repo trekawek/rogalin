@@ -34,7 +34,7 @@ public class ObjectForm extends VerticalLayout {
 
 	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
 
-	private final Map<FieldInfo, UiFieldType> dependentFields = new HashMap<FieldInfo, UiFieldType>();
+	private final Map<FieldInfo, FieldInfo> dependentFields = new HashMap<FieldInfo, FieldInfo>();
 
 	private final PhotoContainer photoContainer;
 
@@ -69,7 +69,7 @@ public class ObjectForm extends VerticalLayout {
 			fields.put(f, formField);
 			if (f.getDependsOn() != null) {
 				FieldInfo dependsOn = f.getDependsOn();
-				dependentFields.put(dependsOn, formField);
+				dependentFields.put(dependsOn, f);
 				boolean visible = false;
 				if (object != null) {
 					visible = f.isVisible(object.get(dependsOn.name()));
@@ -80,7 +80,7 @@ public class ObjectForm extends VerticalLayout {
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
-			} else if (i <= 22) {
+			} else if (i <= 21) {
 				container = leftColumn;
 				i++;
 			} else {
@@ -108,11 +108,12 @@ public class ObjectForm extends VerticalLayout {
 			final FieldInfo fieldInfo = entry.getKey();
 			final UiFieldType uiFieldType = entry.getValue();
 			if (dependentFields.containsKey(fieldInfo)) {
+				final FieldInfo dependentFieldInfo = dependentFields.get(fieldInfo);
+				final UiFieldType dependentField = fields.get(dependentFieldInfo);
 				uiFieldType.addOnChangeListener(new ValueChangeListener() {
 					@Override
 					public void valueChange(ValueChangeEvent event) {
-						UiFieldType dependentField = dependentFields.get(fieldInfo);
-						boolean visible = fieldInfo.isVisible(event.getProperty().getValue());
+						boolean visible = dependentFieldInfo.isVisible(event.getProperty().getValue());
 						dependentField.setEnabled(visible);
 					}
 				});
