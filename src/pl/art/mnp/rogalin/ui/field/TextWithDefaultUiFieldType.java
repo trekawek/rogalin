@@ -86,4 +86,9 @@ public class TextWithDefaultUiFieldType extends AbstractUiFieldType {
 		}
 		return new ContainsPredicate(textField.getValue(), fieldInfo.name());
 	}
+
+	@Override
+	public void clear() {
+		textField.setValue("");
+	}
 }
