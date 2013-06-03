@@ -29,8 +29,9 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
 public class ObjectForm extends VerticalLayout {
+
+	private static final long serialVersionUID = 4289893965280993483L;
 
 	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
 
@@ -46,6 +47,7 @@ public class ObjectForm extends VerticalLayout {
 		this(saveAction, null);
 	}
 
+	@SuppressWarnings("serial")
 	public ObjectForm(SaveActionListener saveAction, DBObject object) {
 		super();
 		this.editedObject = object;
@@ -111,9 +113,11 @@ public class ObjectForm extends VerticalLayout {
 				final FieldInfo dependentFieldInfo = dependentFields.get(fieldInfo);
 				final UiFieldType dependentField = fields.get(dependentFieldInfo);
 				uiFieldType.addOnChangeListener(new ValueChangeListener() {
+					private static final long serialVersionUID = -7267921116400453443L;
+
 					@Override
 					public void valueChange(ValueChangeEvent event) {
-						boolean visible = dependentFieldInfo.isVisible(event.getProperty().getValue());
+						boolean visible = dependentFieldInfo.isVisible(uiFieldType.getDbObject());
 						dependentField.setEnabled(visible);
 					}
 				});

@@ -1,5 +1,9 @@
 package pl.art.mnp.rogalin.db;
 
+import java.util.Collection;
+
+import com.mongodb.DBObject;
+
 import pl.art.mnp.rogalin.field.DateOfCreationFieldType;
 import pl.art.mnp.rogalin.field.ComboBoxFieldType;
 import pl.art.mnp.rogalin.field.DateFieldType;
@@ -44,13 +48,16 @@ public enum FieldInfo {
 	TECHNIQUE("Technika", true, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new ComboBoxFieldType(this);
+			return new MultiSelectFieldType(this, false);
 		}
 	},
 	INTARSIA_TYPE("Rodzaj intarsji", false, true, FieldInfo.TECHNIQUE) {
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean isVisible(Object technique) {
-			return "intarsja".equals(technique);
+			DBObject obj = (DBObject) technique;
+			Collection<String> coll = (Collection<String>) obj.get("values");
+			return coll.contains("intarsja");
 		}
 
 		@Override
@@ -162,13 +169,13 @@ public enum FieldInfo {
 	SUPPORT_DAMAGES("Uszkodzenia podobrazia", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new MultiSelectFieldType(this);
+			return new MultiSelectFieldType(this, true);
 		}
 	},
 	OTHER_DAMAGES("Uszkodzenia warstw dekoracyjnych", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new MultiSelectFieldType(this);
+			return new MultiSelectFieldType(this, true);
 		}
 	},
 	DESC("Uwagi", false, true) {
@@ -209,7 +216,7 @@ public enum FieldInfo {
 	}
 
 	public abstract FieldType getFieldType();
-	
+
 	public boolean isSearchable() {
 		return searchable;
 	}

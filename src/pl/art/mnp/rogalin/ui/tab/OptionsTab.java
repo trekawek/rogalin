@@ -17,8 +17,9 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 
-@SuppressWarnings("serial")
 public class OptionsTab extends VerticalLayout {
+
+	private static final long serialVersionUID = 1379814379387406875L;
 
 	private final ComboBox fieldSelect;
 
@@ -30,6 +31,7 @@ public class OptionsTab extends VerticalLayout {
 
 	private List<String> options;
 
+	@SuppressWarnings("serial")
 	public OptionsTab() {
 		super();
 

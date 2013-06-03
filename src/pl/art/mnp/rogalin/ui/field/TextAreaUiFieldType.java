@@ -22,6 +22,7 @@ public class TextAreaUiFieldType extends AbstractUiFieldType {
 			textArea.setRequired(field.isRequired());
 		}
 		textArea.setRequiredError(EMPTY_FIELD_ERROR);
+		textArea.setColumns(20);
 		if (field == FieldInfo.DESC) {
 			textArea.setColumns(40);
 			textArea.setRows(6);

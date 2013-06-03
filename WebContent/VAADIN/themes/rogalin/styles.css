@@ -11,3 +11,8 @@
 .object-preview .v-caption {
 	font-size: 12px;
 }
+
+.object-preview .textArea {
+	width: 300px;
+	white-space: normal;
+}

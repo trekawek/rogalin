@@ -14,6 +14,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
@@ -21,8 +22,9 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
 public class MultiSelectUiFieldType extends AbstractUiFieldType {
+
+	private static final long serialVersionUID = 7251529681447360985L;
 
 	private final VerticalLayout layout;
 
@@ -32,7 +34,8 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 
 	private final TextField other;
 
-	public MultiSelectUiFieldType(FieldInfo field, List<String> options, boolean search) {
+	@SuppressWarnings("serial")
+	public MultiSelectUiFieldType(FieldInfo field, List<String> options, boolean search, boolean showOther) {
 		super(field);
 		layout = new VerticalLayout();
 		layout.setCaption(field.toString());
@@ -41,6 +44,7 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 		optionGroup.setNullSelectionAllowed(true);
 		optionGroup.setNewItemsAllowed(false);
 		optionGroup.setMultiSelect(true);
+		optionGroup.setImmediate(true);
 		if (!search) {
 			optionGroup.setRequired(field.isRequired());
 		}
@@ -64,9 +68,14 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 		otherLayout.setSpacing(true);
 		otherLayout.addComponent(otherBox);
 		otherLayout.addComponent(other);
-		if (!search) {
+		if (showOther) {
 			layout.addComponent(otherLayout);
 		}
+	}
+
+	@Override
+	public void addOnChangeListener(ValueChangeListener listener) {
+		optionGroup.addValueChangeListener(listener);
 	}
 
 	@SuppressWarnings("unchecked")

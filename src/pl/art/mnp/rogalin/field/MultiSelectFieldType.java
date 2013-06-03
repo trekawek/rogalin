@@ -11,11 +11,15 @@ import pl.art.mnp.rogalin.ui.field.UiFieldType;
 
 import com.mongodb.DBObject;
 
-@SuppressWarnings("serial")
 public class MultiSelectFieldType extends AbstractFieldType {
 
-	public MultiSelectFieldType(FieldInfo field) {
+	private static final long serialVersionUID = 8896033855511526686L;
+
+	private final boolean showOther;
+
+	public MultiSelectFieldType(FieldInfo field, boolean showOther) {
 		super(field);
+		this.showOther = showOther;
 	}
 
 	@Override
@@ -38,12 +42,12 @@ public class MultiSelectFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getFormField() {
-		return new MultiSelectUiFieldType(field, getOptions(), false);
+		return new MultiSelectUiFieldType(field, getOptions(), false, showOther);
 	}
 
 	@Override
 	public UiFieldType getSearchField() {
-		return new MultiSelectUiFieldType(field, getOptions(), true);
+		return new MultiSelectUiFieldType(field, getOptions(), true, false);
 	}
 
 }

@@ -35,6 +35,7 @@ public class DbConnection {
 			synchronized (DbConnection.class) {
 				if (instance == null) {
 					instance = new DbConnection();
+					new DbUpdate(instance).update();
 				}
 			}
 		}

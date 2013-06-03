@@ -13,6 +13,11 @@ public class ComboBoxFieldType extends AbstractFieldType {
 	}
 
 	@Override
+	public boolean hasOptions() {
+		return true;
+	}
+
+	@Override
 	public UiFieldType getFormField() {
 		return new ComboBoxUiFieldType(field, getOptions(), false);
 	}

@@ -18,10 +18,17 @@ public class TextAreaFieldType extends AbstractFieldType {
 
 	@Override
 	public Label getPreviewField(DBObject o) {
-		Label label = super.getPreviewField(o);
-		label.setContentMode(ContentMode.PREFORMATTED);
+		Label label;
 		if (field == FieldInfo.DESC) {
+			label = super.getPreviewField(o);
+			label.setContentMode(ContentMode.PREFORMATTED);
 			label.setStyleName("desc");
+		} else {
+			label = new Label();
+			label.setCaption(getFieldInfo().toString());
+			label.setValue(getValue(o).replace("\n", "<br/>"));
+			label.setContentMode(ContentMode.HTML);
+			label.setStyleName("textArea");
 		}
 		return label;
 	}

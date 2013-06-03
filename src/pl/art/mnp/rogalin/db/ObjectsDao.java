@@ -23,7 +23,7 @@ public class ObjectsDao {
 
 	protected static final Logger LOG = Logger.getLogger(ObjectsDao.class.getName());
 
-	private static final String OBJECTS = "objects";
+	static final String OBJECTS = "objects";
 
 	private DbConnection dbProvider;
 
