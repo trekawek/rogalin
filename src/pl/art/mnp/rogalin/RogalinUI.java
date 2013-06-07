@@ -1,6 +1,5 @@
 package pl.art.mnp.rogalin;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Label;
@@ -12,10 +11,10 @@ import com.vaadin.ui.themes.Runo;
  * Main UI class
  */
 @Theme("rogalin")
-@PreserveOnRefresh
+//@PreserveOnRefresh
 public class RogalinUI extends UI {
 
-	private static final long serialVersionUID = 1551053978627338819L;
+	private static final long serialVersionUID = 1551053978627338820L;
 
 	@Override
 	protected void init(VaadinRequest request) {

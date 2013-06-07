@@ -2,9 +2,11 @@ package pl.art.mnp.rogalin.db;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.bson.types.ObjectId;
@@ -33,13 +35,11 @@ public class ObjectsDao {
 
 	public List<DBObject> getObjectList() {
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
-		return collection.find().toArray();
+		return collection.find().sort(new BasicDBObject("_id", 1)).toArray();
 	}
 
-	public List<DBObject> getFilteredObjectList(String query) {
-		List<DBObject> objects = new ArrayList<DBObject>();
+	public Collection<DBObject> getFilteredObjectList(String query) {
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
-
 		final DBObject textSearchCommand = new BasicDBObject();
 		textSearchCommand.put("text", OBJECTS);
 		textSearchCommand.put("search", String.format("\"%s\"", query));
@@ -47,14 +47,15 @@ public class ObjectsDao {
 		final CommandResult commandResult = dbProvider.getMongoDb().command(textSearchCommand);
 		@SuppressWarnings("unchecked")
 		List<DBObject> list = (List<DBObject>) commandResult.get("results");
+		Map<ObjectId, DBObject> result = new TreeMap<ObjectId, DBObject>();
 		if (list != null) {
 			for (DBObject o : list) {
 				ObjectId id = (ObjectId) ((DBObject) o.get("obj")).get("_id");
 				DBObject object = collection.findOne(new BasicDBObject("_id", id));
-				objects.add(object);
+				result.put(id, object);
 			}
 		}
-		return objects;
+		return result.values();
 	}
 
 	public DBObject getObject(Object id) {

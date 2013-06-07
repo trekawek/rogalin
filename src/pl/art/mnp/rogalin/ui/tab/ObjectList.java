@@ -1,6 +1,7 @@
 package pl.art.mnp.rogalin.ui.tab;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -143,7 +144,7 @@ public class ObjectList extends VerticalLayout implements Handler {
 
 	public void refreshTable() {
 		table.removeAllItems();
-		List<DBObject> objects;
+		Collection<DBObject> objects;
 		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
 		if (StringUtils.isEmpty(query)) {
 			objects = objectDao.getObjectList();

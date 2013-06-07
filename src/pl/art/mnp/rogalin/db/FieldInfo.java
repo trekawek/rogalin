@@ -15,7 +15,7 @@ import pl.art.mnp.rogalin.field.FieldType;
 
 public enum FieldInfo {
 //@formatter:off
-	IDENTIFIER("Numer inwentarzowy", true, true) {
+	IDENTIFIER("Numer inwentarzowy MNP", true, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
