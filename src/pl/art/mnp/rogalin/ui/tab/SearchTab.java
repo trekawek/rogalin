@@ -11,6 +11,7 @@ import pl.art.mnp.rogalin.db.predicate.DummyPredicate;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 import pl.art.mnp.rogalin.field.FieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
+import pl.art.mnp.rogalin.ui.tab.ObjectList.ShowAllListener;
 
 import com.mongodb.DBObject;
 import com.vaadin.ui.Button;
@@ -24,7 +25,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class SearchTab extends VerticalLayout {
+public class SearchTab extends VerticalLayout implements ShowAllListener {
 
 	private final Collection<UiFieldType> fields = new ArrayList<UiFieldType>();
 
@@ -115,4 +116,11 @@ public class SearchTab extends VerticalLayout {
 			return DbConnection.getInstance().getObjectsDao().getPhotos(dbObject).isEmpty();
 		}
 	};
+
+	@Override
+	public void showAll() {
+		for (UiFieldType f : fields) {
+			f.clear();
+		}
+	}
 }

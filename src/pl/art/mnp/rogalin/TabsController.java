@@ -16,8 +16,9 @@ import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
 public class TabsController implements Serializable, SelectedTabChangeListener {
+
+	private static final long serialVersionUID = -545289520470774425L;
 
 	private final TabSheet tabs;
 
@@ -27,9 +28,9 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 
 	private Component newObjectTab;
 
-	private Component searchTab;
+	private SearchTab searchTab;
 
-	private Component optionsTab;
+	private OptionsTab optionsTab;
 
 	public TabsController() {
 		tabs = new TabSheet();
@@ -37,6 +38,7 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 		tabs.addTab(newObjectTab = createNewObjectTab(), "Dodaj nowy");
 		tabs.addTab(searchTab = createSearchTab(), "Wyszukaj");
 		tabs.addTab(optionsTab = createOptionsTab(), "Kategorie");
+		listTab.setShowAllListener(searchTab);
 		tabs.addSelectedTabChangeListener(this);
 	}
 
@@ -56,6 +58,7 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 		if (previousSelectedTab == optionsTab) {
 			tabs.replaceComponent(newObjectTab, newObjectTab = createNewObjectTab());
 			tabs.replaceComponent(searchTab, searchTab = createSearchTab());
+			listTab.setShowAllListener(searchTab);
 		}
 		previousSelectedTab = tabs.getSelectedTab();
 	}
@@ -66,6 +69,8 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 
 	private Component createNewObjectTab() {
 		VerticalLayout newObjectLayout = new VerticalLayout(new ObjectForm(new SaveActionListener() {
+			private static final long serialVersionUID = -848485094498394290L;
+
 			@Override
 			public void onSaveAction() {
 				switchToListTab(true);
@@ -75,17 +80,19 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 		return newObjectLayout;
 	}
 
-	private Component createSearchTab() {
+	private SearchTab createSearchTab() {
 		return new SearchTab(new PredicateListener() {
+			private static final long serialVersionUID = 777576939494883965L;
+
 			@Override
 			public void gotPredicates(List<Predicate> predicates) {
-				listTab.setPredicates(predicates);
-				switchToListTab(true);
+				listTab.gotPredicates(predicates);
+				switchToListTab(false);
 			}
 		});
 	}
 
-	private Component createOptionsTab() {
+	private OptionsTab createOptionsTab() {
 		return new OptionsTab();
 	}
 

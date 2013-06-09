@@ -1,14 +1,17 @@
 package pl.art.mnp.rogalin.ui.tab;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.vaadin.dialogs.ConfirmDialog;
 
+import pl.art.mnp.rogalin.TabsController.PredicateListener;
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.ObjectsDao;
@@ -32,8 +35,11 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
-@SuppressWarnings("serial")
-public class ObjectList extends VerticalLayout implements Handler {
+public class ObjectList extends VerticalLayout implements Handler, PredicateListener {
+
+	private static final Logger LOG = Logger.getLogger(ObjectList.class.getName());
+
+	private static final long serialVersionUID = 3249982629925972328L;
 
 	private static final Action PREVIEW = new Action("Zobacz");
 
@@ -48,6 +54,10 @@ public class ObjectList extends VerticalLayout implements Handler {
 
 	private final VerticalLayout layout;
 
+	private TextField searchText;
+
+	private ShowAllListener showAllListener;
+
 	private Label filterInfo;
 
 	private List<Predicate> predicates;
@@ -58,6 +68,13 @@ public class ObjectList extends VerticalLayout implements Handler {
 
 	public ObjectList() {
 		super();
+		this.showAllListener = new ShowAllListener() {
+			private static final long serialVersionUID = -5072458379584711625L;
+
+			@Override
+			public void showAll() {
+			}
+		};
 
 		setMargin(true);
 		setSpacing(true);
@@ -72,9 +89,11 @@ public class ObjectList extends VerticalLayout implements Handler {
 	private Component searchField() {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.setSpacing(true);
-		final TextField searchText = new TextField();
+		searchText = new TextField();
 		searchText.setImmediate(true);
 		searchText.addValueChangeListener(new ValueChangeListener() {
+			private static final long serialVersionUID = 6289526628390104589L;
+
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				filterResults(searchText.getValue());
@@ -82,6 +101,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 		});
 		Button searchButton = new Button("Wyszukaj");
 		searchButton.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = -1583248192476499700L;
+
 			@Override
 			public void buttonClick(ClickEvent event) {
 				filterResults(searchText.getValue());
@@ -89,6 +110,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 		});
 		Button resetSearch = new Button("Pokaż wszystkie");
 		resetSearch.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = 934242241334057589L;
+
 			@Override
 			public void buttonClick(ClickEvent event) {
 				predicates = null;
@@ -97,6 +120,7 @@ public class ObjectList extends VerticalLayout implements Handler {
 				} else {
 					searchText.setValue("");
 				}
+				showAllListener.showAll();
 			}
 		});
 		filterInfo = new Label("");
@@ -125,6 +149,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 		table.addActionHandler(this);
 		table.setSelectable(false);
 		table.addItemClickListener(new ItemClickListener() {
+			private static final long serialVersionUID = 236557764476429213L;
+
 			@Override
 			public void itemClick(ItemClickEvent event) {
 				if (event.isDoubleClick()) {
@@ -143,6 +169,7 @@ public class ObjectList extends VerticalLayout implements Handler {
 	}
 
 	public void refreshTable() {
+		LOG.info("refresh table invoked");
 		table.removeAllItems();
 		Collection<DBObject> objects;
 		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
@@ -183,6 +210,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 	}
 
 	private final ClickListener showTable = new ClickListener() {
+		private static final long serialVersionUID = -1863572674350666127L;
+
 		@Override
 		public void buttonClick(ClickEvent event) {
 			removeAllComponents();
@@ -234,6 +263,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 		addComponent(back);
 
 		ObjectForm objectForm = new ObjectForm(new SaveActionListener() {
+			private static final long serialVersionUID = 8084094197862972496L;
+
 			@Override
 			public void onSaveAction() {
 				refreshTable();
@@ -247,6 +278,8 @@ public class ObjectList extends VerticalLayout implements Handler {
 	private void remove(final DBObject object) {
 		ConfirmDialog.show(this.getUI(), "Potwierdzenie", "Czy na pewno chcesz usunąć ten obiekt?", "OK",
 				"Anuluj", new ConfirmDialog.Listener() {
+					private static final long serialVersionUID = -3518627734961298673L;
+
 					@Override
 					public void onClose(ConfirmDialog dialog) {
 						if (!dialog.isConfirmed()) {
@@ -260,7 +293,21 @@ public class ObjectList extends VerticalLayout implements Handler {
 				});
 	}
 
-	public void setPredicates(List<Predicate> predicates) {
+	@Override
+	public void gotPredicates(List<Predicate> predicates) {
 		this.predicates = predicates;
+		if (!StringUtils.isEmpty(this.searchText.getValue())) {
+			this.searchText.setValue("");
+		} else {
+			this.refreshTable();
+		}
+	}
+
+	public void setShowAllListener(ShowAllListener listener) {
+		this.showAllListener = listener;
+	}
+
+	public static interface ShowAllListener extends Serializable {
+		void showAll();
 	}
 }

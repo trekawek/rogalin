@@ -27,7 +27,7 @@ public enum FieldInfo {
 			return new TextFieldType(this);
 		}
 	},
-	AUTHOR("Autor", false, true) {
+	AUTHOR("Autor", true, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this, "nieznany", false);

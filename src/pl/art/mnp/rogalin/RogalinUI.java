@@ -11,10 +11,10 @@ import com.vaadin.ui.themes.Runo;
  * Main UI class
  */
 @Theme("rogalin")
-//@PreserveOnRefresh
+// @PreserveOnRefresh
 public class RogalinUI extends UI {
 
-	private static final long serialVersionUID = 1551053978627338820L;
+	private static final long serialVersionUID = 1551053978627338821L;
 
 	@Override
 	protected void init(VaadinRequest request) {
