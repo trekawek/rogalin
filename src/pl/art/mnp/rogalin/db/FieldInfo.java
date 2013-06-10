@@ -65,7 +65,7 @@ public enum FieldInfo {
 			return new ComboBoxFieldType(this);
 		}
 	},
-	CARRIER("Nośnik", false, true) {
+	CARRIER("Nośnik/Tworzywo", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new ComboBoxFieldType(this);
@@ -166,7 +166,7 @@ public enum FieldInfo {
 			return new DateFieldType(this);
 		}
 	},
-	SUPPORT_DAMAGES("Uszkodzenia podobrazia", false, true) {
+	SUPPORT_DAMAGES("Uszkodzenia nośnika/tworzywa", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new MultiSelectFieldType(this, true);

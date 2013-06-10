@@ -122,5 +122,6 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 		for (UiFieldType f : fields) {
 			f.clear();
 		}
+		noPhotoCheckbox.setValue(false);
 	}
 }

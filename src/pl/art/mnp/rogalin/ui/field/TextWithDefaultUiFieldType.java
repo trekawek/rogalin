@@ -90,5 +90,6 @@ public class TextWithDefaultUiFieldType extends AbstractUiFieldType {
 	@Override
 	public void clear() {
 		textField.setValue("");
+		checkBox.setValue(false);
 	}
 }
