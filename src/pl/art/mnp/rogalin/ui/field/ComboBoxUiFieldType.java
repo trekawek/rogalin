@@ -9,8 +9,9 @@ import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 
-@SuppressWarnings("serial")
 public class ComboBoxUiFieldType extends AbstractUiFieldType {
+
+	private static final long serialVersionUID = -1440161782407422938L;
 
 	private final ComboBox comboBox;
 
@@ -18,16 +19,21 @@ public class ComboBoxUiFieldType extends AbstractUiFieldType {
 		super(field);
 		comboBox = new ComboBox(null, options);
 		comboBox.setCaption(field.toString());
-		comboBox.setNullSelectionAllowed(false);
 		comboBox.setNewItemsAllowed(true);
 		comboBox.setImmediate(true);
-		comboBox.setPageLength(0);
+		comboBox.setPageLength(10);
 		if (!search) {
+			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
 		}
 		comboBox.setValidationVisible(true);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
 		comboBox.setNewItemHandler(new AbstractSelect.NewItemHandler() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 7266842433719567514L;
+
 			@Override
 			public void addNewItem(String caption) {
 				LOG.info("New option: " + caption);

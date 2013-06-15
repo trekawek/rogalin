@@ -11,8 +11,9 @@ import pl.art.mnp.rogalin.db.predicate.Predicate;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 
-@SuppressWarnings("serial")
 public class SelectUiFieldType extends AbstractUiFieldType {
+
+	private static final long serialVersionUID = -2001979428978218869L;
 
 	private final ComboBox comboBox;
 
@@ -20,11 +21,13 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 		super(field);
 		comboBox = new ComboBox(null, options);
 		comboBox.setCaption(field.toString());
-		comboBox.setNullSelectionAllowed(false);
 		comboBox.setNewItemsAllowed(false);
 		comboBox.setTextInputAllowed(false);
-		comboBox.setPageLength(0);
-		if (!search) {
+		comboBox.setPageLength(10);
+		if (search) {
+			comboBox.setNullSelectionAllowed(true);
+		} else {
+			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
 		}
 		comboBox.setValidationVisible(true);

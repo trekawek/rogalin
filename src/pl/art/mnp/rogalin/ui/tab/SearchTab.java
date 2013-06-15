@@ -11,6 +11,8 @@ import pl.art.mnp.rogalin.db.predicate.DummyPredicate;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 import pl.art.mnp.rogalin.field.FieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
+import pl.art.mnp.rogalin.ui.photo.DbPhoto;
+import pl.art.mnp.rogalin.ui.photo.PhotoType;
 import pl.art.mnp.rogalin.ui.tab.ObjectList.ShowAllListener;
 
 import com.mongodb.DBObject;
@@ -24,14 +26,17 @@ import com.vaadin.ui.Layout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
 public class SearchTab extends VerticalLayout implements ShowAllListener {
+
+	private static final long serialVersionUID = -7257979675567926412L;
 
 	private final Collection<UiFieldType> fields = new ArrayList<UiFieldType>();
 
 	private final PredicateListener predicateListener;
 
-	private final CheckBox noPhotoCheckbox;
+	private final CheckBox noHistoricPhotoCheckbox;
+
+	private final CheckBox noCurrentPhotoCheckbox;
 
 	public SearchTab(PredicateListener predicateListener) {
 		super();
@@ -41,6 +46,8 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 
 		Button clear = new Button("Wyczyść formularz");
 		clear.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = -341743033021461309L;
+
 			@Override
 			public void buttonClick(ClickEvent event) {
 				clear();
@@ -49,6 +56,8 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 
 		Button search = new Button("Wyszukaj obiekty");
 		search.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = 181424311297491141L;
+
 			@Override
 			public void buttonClick(ClickEvent event) {
 				showObjects();
@@ -84,8 +93,9 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 			}
 			container.addComponent(formField.getComponent());
 		}
-		noPhotoCheckbox = new CheckBox("Obiekty bez fotografii");
-		container.addComponent(noPhotoCheckbox);
+		noCurrentPhotoCheckbox = new CheckBox("Obiekty bez fotografii bieżącej");
+		noHistoricPhotoCheckbox = new CheckBox("Obiekty bez fotografii archiwalnej");
+		container.addComponents(noCurrentPhotoCheckbox, noHistoricPhotoCheckbox);
 	}
 
 	private void showObjects() {
@@ -97,31 +107,46 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 			}
 			predicates.add(field.getPredicate());
 		}
-		if (noPhotoCheckbox.getValue()) {
-			predicates.add(NO_PHOTO_PREDICATE);
+		if (noCurrentPhotoCheckbox.getValue()) {
+			predicates.add(new NoPhotoPredicate(PhotoType.CURRENT));
+		}
+		if (noHistoricPhotoCheckbox.getValue()) {
+			predicates.add(new NoPhotoPredicate(PhotoType.HISTORIC));
 		}
 		predicateListener.gotPredicates(predicates);
 	}
 
 	private void clear() {
-		noPhotoCheckbox.setValue(false);
+		noCurrentPhotoCheckbox.setValue(false);
+		noHistoricPhotoCheckbox.setValue(false);
 		for (UiFieldType field : fields) {
 			field.clear();
 		}
 	}
 
-	private static final Predicate NO_PHOTO_PREDICATE = new Predicate() {
-		@Override
-		public boolean matches(DBObject dbObject) {
-			return DbConnection.getInstance().getObjectsDao().getPhotos(dbObject).isEmpty();
-		}
-	};
-
 	@Override
 	public void showAll() {
-		for (UiFieldType f : fields) {
-			f.clear();
+		clear();
+	}
+
+	private static class NoPhotoPredicate implements Predicate {
+		private static final long serialVersionUID = 8377982253675381734L;
+
+		private final PhotoType type;
+
+		private NoPhotoPredicate(PhotoType type) {
+			this.type = type;
 		}
-		noPhotoCheckbox.setValue(false);
+
+		@Override
+		public boolean matches(DBObject dbObject) {
+			List<DbPhoto> list = DbConnection.getInstance().getObjectsDao().getPhotos(dbObject);
+			for (DbPhoto p : list) {
+				if (p.getType() == type) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }
