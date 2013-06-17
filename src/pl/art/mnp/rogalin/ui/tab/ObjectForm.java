@@ -1,7 +1,9 @@
 package pl.art.mnp.rogalin.ui.tab;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -31,11 +33,11 @@ import com.vaadin.ui.VerticalLayout;
 
 public class ObjectForm extends VerticalLayout {
 
-	private static final long serialVersionUID = 4289893965280993483L;
+	private static final long serialVersionUID = 4289893965280993484L;
 
 	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
 
-	private final Map<FieldInfo, FieldInfo> dependentFields = new HashMap<FieldInfo, FieldInfo>();
+	private final Map<FieldInfo, List<FieldInfo>> dependentFields = new HashMap<FieldInfo, List<FieldInfo>>();
 
 	private final PhotoContainer photoContainer;
 
@@ -71,7 +73,10 @@ public class ObjectForm extends VerticalLayout {
 			fields.put(f, formField);
 			if (f.getDependsOn() != null) {
 				FieldInfo dependsOn = f.getDependsOn();
-				dependentFields.put(dependsOn, f);
+				if (!dependentFields.containsKey(dependsOn)) {
+					dependentFields.put(dependsOn, new ArrayList<FieldInfo>());
+				}
+				dependentFields.get(dependsOn).add(f);
 				boolean visible = false;
 				if (object != null) {
 					visible = f.isVisible(object.get(dependsOn.name()));
@@ -110,17 +115,19 @@ public class ObjectForm extends VerticalLayout {
 			final FieldInfo fieldInfo = entry.getKey();
 			final UiFieldType uiFieldType = entry.getValue();
 			if (dependentFields.containsKey(fieldInfo)) {
-				final FieldInfo dependentFieldInfo = dependentFields.get(fieldInfo);
-				final UiFieldType dependentField = fields.get(dependentFieldInfo);
-				uiFieldType.addOnChangeListener(new ValueChangeListener() {
-					private static final long serialVersionUID = -7267921116400453443L;
+				List<FieldInfo> dependentFieldList = dependentFields.get(fieldInfo);
+				for (final FieldInfo dependentFieldInfo : dependentFieldList) {
+					final UiFieldType dependentField = fields.get(dependentFieldInfo);
+					uiFieldType.addOnChangeListener(new ValueChangeListener() {
+						private static final long serialVersionUID = -7267921116400453444L;
 
-					@Override
-					public void valueChange(ValueChangeEvent event) {
-						boolean visible = dependentFieldInfo.isVisible(uiFieldType.getDbObject());
-						dependentField.setEnabled(visible);
-					}
-				});
+						@Override
+						public void valueChange(ValueChangeEvent event) {
+							boolean visible = dependentFieldInfo.isVisible(uiFieldType.getDbObject());
+							dependentField.setEnabled(visible);
+						}
+					});
+				}
 			}
 		}
 	}

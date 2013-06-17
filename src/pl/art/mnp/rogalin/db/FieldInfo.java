@@ -25,7 +25,7 @@ public enum FieldInfo {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
-		}
+		} 
 	},
 	AUTHOR("Autor", true, true) {
 		@Override
@@ -51,6 +51,20 @@ public enum FieldInfo {
 			return new MultiSelectFieldType(this, false);
 		}
 	},
+	VENEER_TYPE("Rodzaj forniru", false, true, FieldInfo.TECHNIQUE) {
+		@SuppressWarnings("unchecked")
+		@Override
+		public boolean isVisible(Object technique) {
+			DBObject obj = (DBObject) technique;
+			Collection<String> coll = (Collection<String>) obj.get("values");
+			return coll.contains("fornir");
+		}
+
+		@Override
+		public FieldType getFieldType() {
+			return new ComboBoxFieldType(this);
+		}
+	},
 	INTARSIA_TYPE("Rodzaj intarsji", false, true, FieldInfo.TECHNIQUE) {
 		@SuppressWarnings("unchecked")
 		@Override
@@ -65,6 +79,7 @@ public enum FieldInfo {
 			return new ComboBoxFieldType(this);
 		}
 	},
+
 	CARRIER("Nośnik/Tworzywo", false, true) {
 		@Override
 		public FieldType getFieldType() {
