@@ -39,7 +39,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	private static final Logger LOG = Logger.getLogger(ObjectList.class.getName());
 
-	private static final long serialVersionUID = 3249982629925972329L;
+	private static final long serialVersionUID = 3249982629925972330L;
 
 	private static final Action PREVIEW = new Action("Zobacz");
 

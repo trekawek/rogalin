@@ -16,3 +16,7 @@
 	width: 300px;
 	white-space: normal;
 }
+
+.v-label-desc pre {
+	font-family: 'Trebuchet MS', geneva, helvetica, arial, tahoma, verdana, sans-serif;
+}

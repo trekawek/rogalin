@@ -33,7 +33,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class ObjectForm extends VerticalLayout {
 
-	private static final long serialVersionUID = 4289893965280993484L;
+	private static final long serialVersionUID = 4289893965280993486L;
 
 	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
 
@@ -87,7 +87,7 @@ public class ObjectForm extends VerticalLayout {
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
-			} else if (i <= 21) {
+			} else if (i <= 23) {
 				container = leftColumn;
 				i++;
 			} else {

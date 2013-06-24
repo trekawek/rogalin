@@ -35,7 +35,7 @@ public class DateUiFieldType extends AbstractUiFieldType {
 			dateField.setRequired(field.isRequired());
 		}
 		dateField.setDateFormat(DATE_FORMAT);
-		dateField.setValidationVisible(true);
+		dateField.setValidationVisible(false);
 		dateField.setRequiredError(EMPTY_FIELD_ERROR);
 	}
 

@@ -30,7 +30,7 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
 		}
-		comboBox.setValidationVisible(true);
+		comboBox.setValidationVisible(false);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
 	}
 

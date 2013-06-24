@@ -14,7 +14,7 @@ import pl.art.mnp.rogalin.db.DbConnection;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
-import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Upload;
@@ -27,17 +27,20 @@ import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
-@SuppressWarnings("serial")
 public class PhotoContainer extends VerticalLayout implements Receiver, FinishedListener, FailedListener,
 		ImageRemovedListener {
 
+	private static final long serialVersionUID = 4452654742708082981L;
+
 	private static final Logger LOG = Logger.getLogger(PhotoContainer.class.getName());
 
-	private final GridLayout imageContainer;
+	private final VerticalLayout imageContainer;
 
 	private final Map<String, PhotoModel> images = new LinkedHashMap<String, PhotoModel>();
 
 	private final Map<String, UploadedPhoto> tempImages = new LinkedHashMap<String, UploadedPhoto>();
+	
+	private final Upload upload;
 
 	private Map<String, PhotoComponent> components;
 
@@ -52,7 +55,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		imageLabel.setVisible(false);
 		addComponent(imageLabel);
 
-		imageContainer = new GridLayout(2, 1);
+		imageContainer = new VerticalLayout();
 		imageContainer.setSpacing(true);
 		addComponent(imageContainer);
 
@@ -61,10 +64,11 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		title.setSizeUndefined();
 		addComponent(title);
 
-		Upload upload = new Upload();
+		upload = new Upload();
 		upload.setReceiver(this);
 		upload.addFinishedListener(this);
 		upload.addFailedListener(this);
+		upload.setImmediate(true);
 		addComponent(upload);
 
 		if (object != null) {
@@ -103,6 +107,8 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		imageContainer.removeAllComponents();
 		boolean imageDisplayed = false;
 		Map<String, PhotoComponent> photoComponents = new HashMap<String, PhotoComponent>();
+		HorizontalLayout horizLayout = new HorizontalLayout();
+		horizLayout.setSpacing(true);
 		for (PhotoModel image : images.values()) {
 			imageDisplayed = true;
 			PhotoComponent component = null;
@@ -110,8 +116,16 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 			if (component == null) {
 				component = new PhotoComponent(this, image);
 			}
-			imageContainer.addComponent(component);
 			photoComponents.put(image.getFileName(), component);
+			horizLayout.addComponent(component);
+			if (horizLayout.getComponentCount() == 2) {
+				imageContainer.addComponent(horizLayout);
+				horizLayout = new HorizontalLayout();
+				horizLayout.setSpacing(true);
+			}
+		}
+		if (horizLayout.getComponentCount() > 0) {
+			imageContainer.addComponent(horizLayout);
 		}
 		components = photoComponents;
 		imageLabel.setVisible(imageDisplayed);

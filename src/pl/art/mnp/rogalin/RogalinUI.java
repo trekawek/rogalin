@@ -15,7 +15,7 @@ import com.vaadin.ui.themes.Runo;
 public class RogalinUI extends UI {
 
 	private static final long serialVersionUID = 1551053978627338821L;
-
+ 
 	@Override
 	protected void init(VaadinRequest request) {
 		VerticalLayout layout = new VerticalLayout();

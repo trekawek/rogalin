@@ -24,7 +24,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class MultiSelectUiFieldType extends AbstractUiFieldType {
 
-	private static final long serialVersionUID = 7251529681447360985L;
+	private static final long serialVersionUID = 7251529681447360987L;
 
 	private final VerticalLayout layout;
 
@@ -48,13 +48,13 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 		if (!search) {
 			optionGroup.setRequired(field.isRequired());
 		}
-		optionGroup.setValidationVisible(true);
+		optionGroup.setValidationVisible(false);
 		optionGroup.setRequiredError(EMPTY_FIELD_ERROR);
 		layout.addComponent(optionGroup);
 
 		other = new TextField();
 		other.setEnabled(false);
-		other.setValidationVisible(true);
+		other.setValidationVisible(false);
 		other.setRequiredError(EMPTY_FIELD_ERROR);
 		otherBox = new CheckBox("inne: ");
 		otherBox.addValueChangeListener(new Property.ValueChangeListener() {
@@ -98,6 +98,9 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 			return;
 		}
 		DBObject o = (DBObject) object.get(fieldInfo.name());
+		if (o == null) {
+			return;
+		}
 		Collection<String> values = (Collection<String>) o.get("values");
 		if (values == null) {
 			return;
@@ -139,4 +142,8 @@ public class MultiSelectUiFieldType extends AbstractUiFieldType {
 		return new MultiSelectPredicate((Collection<String>) optionGroup.getValue(), fieldInfo.name());
 	}
 
+	@Override
+	public void setEnabled(boolean visible) {
+		layout.setVisible(visible);
+	}
 }

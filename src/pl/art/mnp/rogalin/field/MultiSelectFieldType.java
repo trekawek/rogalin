@@ -13,7 +13,7 @@ import com.mongodb.DBObject;
 
 public class MultiSelectFieldType extends AbstractFieldType {
 
-	private static final long serialVersionUID = 8896033855511526686L;
+	private static final long serialVersionUID = 8896033855511526689L;
 
 	private final boolean showOther;
 
@@ -32,10 +32,14 @@ public class MultiSelectFieldType extends AbstractFieldType {
 	public String getValue(DBObject dbObject) {
 		DBObject compositeValue = (DBObject) dbObject.get(field.name());
 		List<String> values = new ArrayList<String>();
-		values.addAll((List<String>) compositeValue.get("values"));
-		String other = (String) compositeValue.get("other");
-		if (other != null) {
-			values.add(other);
+		if (compositeValue != null) {
+			if (compositeValue.containsField("values")) {
+				values.addAll((List<String>) compositeValue.get("values"));
+			}
+			String other = (String) compositeValue.get("other");
+			if (other != null) {
+				values.add(other);
+			}
 		}
 		return StringUtils.join(values, ", ");
 	}

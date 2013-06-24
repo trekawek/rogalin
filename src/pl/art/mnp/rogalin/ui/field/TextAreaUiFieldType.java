@@ -17,7 +17,7 @@ public class TextAreaUiFieldType extends AbstractUiFieldType {
 		super(field);
 		textArea = new TextArea();
 		textArea.setCaption(field.toString());
-		textArea.setValidationVisible(true);
+		textArea.setValidationVisible(false);
 		if (!search) {
 			textArea.setRequired(field.isRequired());
 		}

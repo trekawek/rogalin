@@ -7,13 +7,15 @@ import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 import com.mongodb.DBObject;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
 public class ObjectPreview extends VerticalLayout {
+
+	private static final long serialVersionUID = 8078600605367926109L;
 
 	public ObjectPreview(DBObject dbObject) {
 		super();
@@ -33,7 +35,7 @@ public class ObjectPreview extends VerticalLayout {
 			Layout container;
 			if (f.isBelowColumns()) {
 				container = belowColumns;
-			} else if (i <= 14) {
+			} else if (i <= 16) {
 				container = leftColumn;
 				i++;
 			} else {
@@ -52,10 +54,20 @@ public class ObjectPreview extends VerticalLayout {
 			}
 		}
 
-		GridLayout photos = new GridLayout(2, 1);
+		VerticalLayout photos = new VerticalLayout();
 		photos.setSpacing(true);
+		HorizontalLayout horizLayout = new HorizontalLayout();
+		horizLayout.setSpacing(true);
 		for (DbPhoto p : DbConnection.getInstance().getObjectsDao().getPhotos(dbObject)) {
-			photos.addComponent(renderPhoto(p));
+			horizLayout.addComponent(renderPhoto(p));
+			if (horizLayout.getComponentCount() == 2) {
+				photos.addComponent(horizLayout);
+				horizLayout = new HorizontalLayout();
+				horizLayout.setSpacing(true);
+			}
+		}
+		if (horizLayout.getComponentCount() > 0) {
+			photos.addComponent(horizLayout);
 		}
 		addComponent(photos);
 	}

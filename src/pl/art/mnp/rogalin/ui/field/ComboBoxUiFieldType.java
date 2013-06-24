@@ -11,7 +11,7 @@ import com.vaadin.ui.Component;
 
 public class ComboBoxUiFieldType extends AbstractUiFieldType {
 
-	private static final long serialVersionUID = -1440161782407422938L;
+	private static final long serialVersionUID = -1440161782407422942L;
 
 	private final ComboBox comboBox;
 
@@ -26,12 +26,9 @@ public class ComboBoxUiFieldType extends AbstractUiFieldType {
 			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
 		}
-		comboBox.setValidationVisible(true);
+		comboBox.setValidationVisible(false);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
 		comboBox.setNewItemHandler(new AbstractSelect.NewItemHandler() {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 7266842433719567514L;
 
 			@Override

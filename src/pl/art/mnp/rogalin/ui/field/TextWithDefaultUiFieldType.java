@@ -34,7 +34,7 @@ public class TextWithDefaultUiFieldType extends AbstractUiFieldType {
 		layout.setCaption(field.toString());
 
 		textField = new TextField();
-		textField.setValidationVisible(true);
+		textField.setValidationVisible(false);
 		if (!search) {
 			textField.setRequired(field.isRequired());
 		}

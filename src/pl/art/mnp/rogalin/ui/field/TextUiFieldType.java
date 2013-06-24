@@ -17,7 +17,7 @@ public class TextUiFieldType extends AbstractUiFieldType {
 		super(field);
 		textField = new TextField();
 		textField.setCaption(field.toString());
-		textField.setValidationVisible(true);
+		textField.setValidationVisible(false);
 		if (!search) {
 			textField.setRequired(field.isRequired());
 		}

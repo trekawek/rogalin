@@ -62,7 +62,7 @@ public enum FieldInfo {
 
 		@Override
 		public FieldType getFieldType() {
-			return new ComboBoxFieldType(this);
+			return new MultiSelectFieldType(this, false);
 		}
 	},
 	INTARSIA_TYPE("Rodzaj intarsji", false, true, FieldInfo.TECHNIQUE) {
@@ -133,6 +133,12 @@ public enum FieldInfo {
 			return new ComboBoxFieldType(this);
 		}
 	},
+	LOCATION("Opis lokalizacji", false, true) {
+		@Override
+		public FieldType getFieldType() {
+			return new TextFieldType(this);
+		}
+	},
 	TEMPORARY_HOME("Tymczasowe miejsce przechowywania", false, true) {
 		@Override
 		public FieldType getFieldType() {
@@ -163,7 +169,7 @@ public enum FieldInfo {
 			return new SelectFieldType(this);
 		}
 	},
-	ELEMENT_ABSENCE("Brak elementu", false, true) {
+	ELEMENT_ABSENCE("Brakujące elementy", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
