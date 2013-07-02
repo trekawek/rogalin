@@ -11,7 +11,7 @@ import com.vaadin.ui.Component;
 
 public class ComboBoxUiFieldType extends AbstractUiFieldType {
 
-	private static final long serialVersionUID = -1440161782407422942L;
+	private static final long serialVersionUID = -1440161782407422943L;
 
 	private final ComboBox comboBox;
 
@@ -23,8 +23,10 @@ public class ComboBoxUiFieldType extends AbstractUiFieldType {
 		comboBox.setImmediate(true);
 		comboBox.setPageLength(10);
 		if (!search) {
-			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
+		}
+		if (!search && field.isRequired()) {
+			comboBox.setNullSelectionAllowed(false);
 		}
 		comboBox.setValidationVisible(false);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
