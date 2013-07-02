@@ -30,7 +30,7 @@ import com.vaadin.ui.themes.Runo;
 public class PhotoContainer extends VerticalLayout implements Receiver, FinishedListener, FailedListener,
 		ImageRemovedListener {
 
-	private static final long serialVersionUID = 4452654742708082981L;
+	private static final long serialVersionUID = 4452654742708082982L;
 
 	private static final Logger LOG = Logger.getLogger(PhotoContainer.class.getName());
 
@@ -68,7 +68,6 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 		upload.setReceiver(this);
 		upload.addFinishedListener(this);
 		upload.addFailedListener(this);
-		upload.setImmediate(true);
 		addComponent(upload);
 
 		if (object != null) {
