@@ -18,5 +18,25 @@
 }
 
 .v-label-desc pre {
-	font-family: 'Trebuchet MS', geneva, helvetica, arial, tahoma, verdana, sans-serif;
+	font-family: 'Trebuchet MS', geneva, helvetica, arial, tahoma, verdana,
+		sans-serif;
+}
+
+h2.rendered_object_title {
+	color: black;
+}
+
+table.rendered_object {
+	border: 1px solid black;
+	border-collapse: collapse;
+	margin-bottom: 5px;
+}
+
+table.rendered_object td {
+	border: 1px solid black;
+	padding: 5px;
+}
+
+table.rendered_object evaluation_date {
+	text-align: right;
 }

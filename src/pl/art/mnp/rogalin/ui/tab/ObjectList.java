@@ -16,6 +16,7 @@ import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
+import pl.art.mnp.rogalin.ui.print.PrintPage;
 
 import com.mongodb.DBObject;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -24,6 +25,7 @@ import com.vaadin.event.Action;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
+import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -39,7 +41,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	private static final Logger LOG = Logger.getLogger(ObjectList.class.getName());
 
-	private static final long serialVersionUID = 3249982629925972330L;
+	private static final long serialVersionUID = 3249982629925972332L;
 
 	private static final Action PREVIEW = new Action("Zobacz");
 
@@ -243,10 +245,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			return;
 		}
 		removeAllComponents();
-
-		Button back = new Button("Powrót do listy");
-		back.addClickListener(showTable);
-		addComponent(back);
+		addComponent(getButtons(object));
 
 		ObjectPreview preview = new ObjectPreview(object);
 		addComponent(preview);
@@ -257,10 +256,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			return;
 		}
 		removeAllComponents();
-
-		Button back = new Button("Powrót do listy");
-		back.addClickListener(showTable);
-		addComponent(back);
+		addComponent(getButtons(object));
 
 		ObjectForm objectForm = new ObjectForm(new SaveActionListener() {
 			private static final long serialVersionUID = 8084094197862972496L;
@@ -309,5 +305,25 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	public static interface ShowAllListener extends Serializable {
 		void showAll();
+	}
+
+	private Component getButtons(DBObject object) {
+		HorizontalLayout layout = new HorizontalLayout();
+
+		Button back = new Button("Powrót do listy");
+		back.addClickListener(showTable);
+		layout.addComponent(back);
+		layout.addComponent(getPrintButton(object));
+
+		return layout;
+	}
+
+	private Button getPrintButton(DBObject dbObject) {
+		BrowserWindowOpener opener = new BrowserWindowOpener(PrintPage.class);
+		opener.setParameter("objectId", dbObject.get("_id").toString());
+		opener.setFeatures("height=200,width=400,resizable");
+		Button print = new Button("Drukuj");
+		opener.extend(print);
+		return print;
 	}
 }
