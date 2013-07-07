@@ -10,7 +10,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 2;
+	private static final int DB_VERSION = 3;
 
 	private DBCollection metadata;
 
@@ -36,6 +36,9 @@ public class DbUpdate {
 			}
 			if (i == 2) {
 				ManagementUtils.changeFieldToMultiselect(FieldInfo.VENEER_TYPE);
+			}
+			if (i == 3) {
+				ManagementUtils.changeFieldToMultiselect(FieldInfo.INTARSIA_TYPE);
 			}
 			setVersion(i);
 		}
