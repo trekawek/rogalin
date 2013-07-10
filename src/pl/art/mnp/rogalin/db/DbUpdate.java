@@ -10,13 +10,16 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 3;
+	private static final int DB_VERSION = 5;
 
 	private DBCollection metadata;
 
 	private DBObject metadataObj;
 
+	private DbConnection connection;
+
 	public DbUpdate(DbConnection connection) {
+		this.connection = connection;
 		metadata = connection.getMongoDb().getCollection("metadata");
 		DBObject obj = metadata.findOne();
 		if (obj == null) {
@@ -28,17 +31,24 @@ public class DbUpdate {
 	}
 
 	public void update() {
+
 		int currentDbVersion = getVersion();
 		for (int i = currentDbVersion + 1; i <= DB_VERSION; i++) {
 			LOG.log(Level.INFO, "update to " + i);
 			if (i == 1) {
-				ManagementUtils.changeFieldToMultiselect(FieldInfo.TECHNIQUE);
+				ManagementUtils.changeFieldToMultiselect(connection, FieldInfo.TECHNIQUE);
 			}
 			if (i == 2) {
-				ManagementUtils.changeFieldToMultiselect(FieldInfo.VENEER_TYPE);
+				ManagementUtils.changeFieldToMultiselect(connection, FieldInfo.VENEER_TYPE);
 			}
 			if (i == 3) {
-				ManagementUtils.changeFieldToMultiselect(FieldInfo.INTARSIA_TYPE);
+				ManagementUtils.changeFieldToMultiselect(connection, FieldInfo.INTARSIA_TYPE);
+			}
+			if (i == 4) {
+				ManagementUtils.changeFieldToMultiselect(connection, FieldInfo.INTARSIA_TYPE);
+			}
+			if (i == 5) {
+				ManagementUtils.importLocations(connection);
 			}
 			setVersion(i);
 		}

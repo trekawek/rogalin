@@ -19,16 +19,20 @@ public class MultiSelectPredicate implements Predicate {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean matches(DBObject dbObject) {
+		if (subset.isEmpty()) {
+			return true;
+		}
+
 		DBObject field = (DBObject) dbObject.get(fieldName);
 		if (field == null) {
-			return true;
+			return false;
 		}
 		Collection<String> values = (Collection<String>) field.get("values");
 		for (String s : subset) {
-			if (!values.contains(s)) {
-				return false;
+			if (values.contains(s)) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 }

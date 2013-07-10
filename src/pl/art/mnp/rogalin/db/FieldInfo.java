@@ -76,7 +76,7 @@ public enum FieldInfo {
 
 		@Override
 		public FieldType getFieldType() {
-			return new ComboBoxFieldType(this);
+			return new MultiSelectFieldType(this, false);
 		}
 	},
 

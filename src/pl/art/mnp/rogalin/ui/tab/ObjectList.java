@@ -19,6 +19,7 @@ import pl.art.mnp.rogalin.db.predicate.Predicate;
 import pl.art.mnp.rogalin.ui.print.PrintPage;
 
 import com.mongodb.DBObject;
+import com.vaadin.addon.tableexport.ExcelExport;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.event.Action;
@@ -125,11 +126,30 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				showAllListener.showAll();
 			}
 		});
+		Button excel = new Button("Eksportuj");
+		excel.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = 934242241334057589L;
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				exportToExcel();
+			}
+		});
+		
+
 		filterInfo = new Label("");
-		layout.addComponents(searchText, searchButton, resetSearch, filterInfo);
+		layout.addComponents(searchText, searchButton, resetSearch, excel, filterInfo);
 		return layout;
 	}
 
+	private void exportToExcel() {
+		ExcelExport export = new ExcelExport(table);
+		export.setExportFileName("rogalin-obiekty.xls");
+		export.excludeCollapsedColumns();
+		export.export();
+		export.sendConverted();
+	}
+	
 	private void filterResults(String value) {
 		if (StringUtils.isEmpty(value)) {
 			this.query = null;

@@ -1,10 +1,17 @@
 package pl.art.mnp.rogalin.db;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
 
 import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 import pl.art.mnp.rogalin.ui.tab.OptionsTab;
@@ -21,8 +28,7 @@ public final class ManagementUtils {
 	private ManagementUtils() {
 	}
 
-	public static void generateThumbnails() {
-		DbConnection connection = DbConnection.getInstance();
+	public static void generateThumbnails(DbConnection connection) {
 		ObjectsDao dao = connection.getObjectsDao();
 		try {
 			for (DBObject o : dao.getObjectList()) {
@@ -39,8 +45,8 @@ public final class ManagementUtils {
 		}
 	}
 
-	public static void changeFieldToMultiselect(FieldInfo field) {
-		DBCollection collection = DbConnection.getInstance().getMongoDb().getCollection(ObjectsDao.OBJECTS);
+	public static void changeFieldToMultiselect(DbConnection connection, FieldInfo field) {
+		DBCollection collection = connection.getMongoDb().getCollection(ObjectsDao.OBJECTS);
 		for (DBObject o : collection.find().toArray()) {
 			Object obj = o.get(field.name());
 			if (obj instanceof String) {
@@ -49,6 +55,48 @@ public final class ManagementUtils {
 				o.put(field.name(), newObj);
 				collection.update(new BasicDBObject("_id", o.get("_id")), o);
 			}
+		}
+	}
+
+	public static void importLocations(DbConnection connection) {
+		InputStream is = ManagementUtils.class.getClassLoader().getResourceAsStream("locations.txt");
+		if (is == null) {
+			System.err.println("can't find locations");
+			return;
+		}
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		String line;
+		DBCollection collection = connection.getMongoDb().getCollection("objects");
+		Set<String> used = new HashSet<String>();
+		try {
+			while ((line = reader.readLine()) != null) {
+				String location = line;
+				String objects = reader.readLine();
+				updateLocation(collection, used, location, objects);
+				reader.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void updateLocation(DBCollection collection, Set<String> used, String location,
+			String objects) throws Exception {
+		String[] list = objects.split(", ");
+		System.out.println(" *** " + location + " *** ");
+		for (String objectIdentifier : list) {
+			DBObject ref = new BasicDBObject(FieldInfo.IDENTIFIER.name(), "P " + objectIdentifier);
+			DBObject object = collection.findOne(ref);
+			if (object == null) {
+				System.err.println("Can't find " + objectIdentifier + " (location: " + location + ")");
+			} else if (!StringUtils.isEmpty((String) object.get(FieldInfo.LOCATION.name()))) {
+				System.err.println("Location already exists for " + objectIdentifier + " (location: "
+						+ location + ")");
+			} else {
+				object.put(FieldInfo.LOCATION.name(), location);
+				collection.update(new BasicDBObject("_id", object.get("_id")), object);
+			}
+			System.out.println(" # " + objectIdentifier);
 		}
 	}
 }

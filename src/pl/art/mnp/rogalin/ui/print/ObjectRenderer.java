@@ -33,13 +33,23 @@ public class ObjectRenderer {
 		renderCell(FieldInfo.TYPE, 1);
 		closeRow();
 		newRow();
-		renderCell(FieldInfo.TECHNIQUE, 1);
-		renderCell(FieldInfo.VENEER_TYPE, 1);
-		renderCell(FieldInfo.INTARSIA_TYPE, 1);
+		int veenerVisible = isVisible(FieldInfo.VENEER_TYPE) ? 1 : 0;
+		int intarsiaVisible = isVisible(FieldInfo.INTARSIA_TYPE) ? 1 : 0;
+		renderCell(FieldInfo.TECHNIQUE, 3 - veenerVisible - intarsiaVisible);
+		if (veenerVisible == 1) {
+			renderCell(FieldInfo.VENEER_TYPE, 1);
+		}
+		if (intarsiaVisible == 1) {
+			renderCell(FieldInfo.INTARSIA_TYPE, 1);
+		}
 		closeRow();
 		newRow();
-		renderCell(FieldInfo.CARRIER, 2);
-		renderCell(FieldInfo.WOOD_TYPE, 1);
+		if (isVisible(FieldInfo.WOOD_TYPE)) {
+			renderCell(FieldInfo.CARRIER, 2);
+			renderCell(FieldInfo.WOOD_TYPE, 1);
+		} else {
+			renderCell(FieldInfo.CARRIER, 3);
+		}
 		closeRow();
 		newRow();
 		renderCell(FieldInfo.HEIGHT, 1);
@@ -56,8 +66,9 @@ public class ObjectRenderer {
 		renderCell(FieldInfo.PARTS_IN_PACKAGE, 1, "El. po spakowaniu");
 		closeRow();
 		newRow();
+		renderCell(FieldInfo.DEPARTMENT, 1);
 		renderCell(FieldInfo.CONDITION, 1);
-		renderCell(FieldInfo.COMPLETENESS, 2);
+		renderCell(FieldInfo.COMPLETENESS, 1);
 		closeRow();
 		newRow();
 		renderCell(FieldInfo.ELEMENT_ABSENCE, 3);
@@ -110,5 +121,12 @@ public class ObjectRenderer {
 	@Override
 	public String toString() {
 		return builder.toString();
+	}
+
+	private boolean isVisible(FieldInfo field) {
+		if (field.getDependsOn() == null) {
+			return true;
+		}
+		return field.isVisible(dbObject.get(field.getDependsOn().name()));
 	}
 }

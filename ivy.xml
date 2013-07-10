@@ -33,9 +33,13 @@
 			rev="&vaadin.version;" conf="widgetset-compile->default" />
 
 		<dependency org="commons-lang" name="commons-lang" rev="2.6"/>
+		<dependency org="commons-io" name="commons-io" rev="2.4"/>
+		<dependency org="org.apache.poi" name="poi" rev="3.9"/>
 		<dependency org="org.mongodb" name="mongo-java-driver" rev="2.11.0"/>
 		<dependency org="net.coobird" name="thumbnailator" rev="0.4.4"/>
-		
+
+		<!--  vaadin add-ons -->
+		<dependency org="org.vaadin.addons" name="tableexport" rev="1.4.0" />
 		<dependency org="org.vaadin.addon" name="confirmdialog" rev="2.0.4" />
 	</dependencies>
 </ivy-module>
