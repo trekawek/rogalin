@@ -10,7 +10,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 5;
+	private static final int DB_VERSION = 6;
 
 	private DBCollection metadata;
 
@@ -49,6 +49,20 @@ public class DbUpdate {
 			}
 			if (i == 5) {
 				ManagementUtils.importLocations(connection);
+			}
+			if (i == 6) {
+				DBCollection collection = connection.getMongoDb().getCollection("objects");
+				for (DBObject o : collection.find()) {
+					String location = (String) o.get(FieldInfo.LOCATION.name());
+					if (location != null) {
+						location = location.replace("pĂłĹ‚ka", "półka");
+						location = location.replace("Ĺ›ciana", "ściana");
+						location = location.replace("podĹ‚oga", "podłoga");
+						location = location.replace("regaĹ", "regał");
+						o.put(FieldInfo.LOCATION.name(), location);
+						collection.update(new BasicDBObject("_id", o.get("_id")), o);
+					}
+				}
 			}
 			setVersion(i);
 		}
