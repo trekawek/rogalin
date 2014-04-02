@@ -42,8 +42,6 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	private static final Logger LOG = Logger.getLogger(ObjectList.class.getName());
 
-	private static final long serialVersionUID = 3249982629925972332L;
-
 	private static final Action PREVIEW = new Action("Zobacz");
 
 	private static final Action EDIT = new Action("Edytuj");
@@ -56,6 +54,8 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			FieldInfo.TYPE, FieldInfo.EVALUATION_DATE);
 
 	private final VerticalLayout layout;
+
+	private final String defaultHome;
 
 	private TextField searchText;
 
@@ -71,6 +71,12 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	public ObjectList() {
 		super();
+		List<String> homeOptions = DbConnection.getInstance().getOptionsDao().getOptions(FieldInfo.HOME);
+		if (homeOptions.isEmpty()) {
+			defaultHome = null;
+		} else {
+			defaultHome = homeOptions.get(0);
+		}
 		this.showAllListener = new ShowAllListener() {
 			private static final long serialVersionUID = -5072458379584711625L;
 
@@ -135,7 +141,6 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				exportToExcel();
 			}
 		});
-		
 
 		filterInfo = new Label("");
 		layout.addComponents(searchText, searchButton, resetSearch, excel, filterInfo);
@@ -149,7 +154,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		export.export();
 		export.sendConverted();
 	}
-	
+
 	private void filterResults(String value) {
 		if (StringUtils.isEmpty(value)) {
 			this.query = null;
@@ -202,7 +207,8 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		}
 		int i = 0;
 		for (DBObject o : objects) {
-			if (matchesPredicates(o)) {
+			if ((predicates == null && matchesDefaultPredicates(o))
+					|| (predicates != null && matchesPredicates(o))) {
 				i++;
 				table.addItem(createTableRow(o), o.get("_id"));
 			}
@@ -211,10 +217,15 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				: "Wyniki podlegają filtrowaniu."));
 	}
 
-	private boolean matchesPredicates(DBObject o) {
-		if (predicates == null) {
+	private boolean matchesDefaultPredicates(DBObject o) {
+		if (StringUtils.isBlank(defaultHome)) {
 			return true;
 		}
+		String location = (String) o.get(FieldInfo.HOME.name());
+		return defaultHome.equals(location);
+	}
+
+	private boolean matchesPredicates(DBObject o) {
 		for (Predicate p : predicates) {
 			if (!p.matches(o)) {
 				return false;

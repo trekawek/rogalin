@@ -8,8 +8,14 @@ import pl.art.mnp.rogalin.ui.field.UiFieldType;
 @SuppressWarnings("serial")
 public class ComboBoxFieldType extends AbstractFieldType {
 
+	private boolean selectFirstItem;
+
 	public ComboBoxFieldType(final FieldInfo field) {
 		super(field);
+	}
+
+	public void setSelectFirstItem(boolean selectFirstItem) {
+		this.selectFirstItem = selectFirstItem;
 	}
 
 	@Override
@@ -24,6 +30,6 @@ public class ComboBoxFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getSearchField() {
-		return new SelectUiFieldType(field, getOptions(), true);
+		return new SelectUiFieldType(field, getOptions(), true, selectFirstItem);
 	}
 }

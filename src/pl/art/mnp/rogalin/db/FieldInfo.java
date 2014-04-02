@@ -130,7 +130,9 @@ public enum FieldInfo {
 	HOME("Stałe miejsce przechowywania", true, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new ComboBoxFieldType(this);
+			ComboBoxFieldType fieldType = new ComboBoxFieldType(this);
+			fieldType.setSelectFirstItem(true);
+			return fieldType;
 		}
 	},
 	LOCATION("Opis lokalizacji", false, true) {

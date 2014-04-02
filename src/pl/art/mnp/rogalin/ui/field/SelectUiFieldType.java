@@ -17,7 +17,13 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 
 	private final ComboBox comboBox;
 
+	private final String defaultOption;
+
 	public SelectUiFieldType(FieldInfo field, List<String> options, boolean search) {
+		this(field, options, search, false);
+	}
+
+	public SelectUiFieldType(FieldInfo field, List<String> options, boolean search, boolean selectFirstItem) {
 		super(field);
 		comboBox = new ComboBox(null, options);
 		comboBox.setCaption(field.toString());
@@ -32,6 +38,12 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 		}
 		comboBox.setValidationVisible(false);
 		comboBox.setRequiredError(EMPTY_FIELD_ERROR);
+		if (selectFirstItem && !options.isEmpty()) {
+			defaultOption = options.get(0);
+		} else {
+			defaultOption = null;
+		}
+		clear();
 	}
 
 	@Override
@@ -45,5 +57,10 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 			return DUMMY_PREDICATE;
 		}
 		return new EqualsPredicate((String) comboBox.getValue(), fieldInfo.name());
+	}
+
+	@Override
+	public void clear() {
+		comboBox.setValue(defaultOption);
 	}
 }
