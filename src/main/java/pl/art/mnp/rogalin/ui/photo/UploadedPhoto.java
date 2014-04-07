@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.coobird.thumbnailator.Thumbnails;
-
 import pl.art.mnp.rogalin.db.DbConnection;
 
 import com.mongodb.BasicDBObject;
@@ -43,6 +42,8 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 
 	private final String mimeType;
 
+	private int direction = 0;
+
 	public UploadedPhoto(String fileName, String mimeType) throws IOException {
 		this.rawFile = File.createTempFile("rogalin_raw", fileName);
 		this.photoFile = File.createTempFile("rogalin_normal", fileName);
@@ -53,11 +54,14 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 
 	public boolean createThumbnails() {
 		try {
-			Thumbnails.of(rawFile).size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT).toFile(thumbnailFile);
-			Thumbnails.of(rawFile).size(1024, 768).toFile(photoFile);
+			File temp = File.createTempFile("rogalin_temp", fileName);
+			Thumbnails.of(rawFile).size(1024, 768).toFile(temp);
+			Thumbnails.of(temp).rotate(direction * 90).scale(1).toFile(photoFile);
+			Thumbnails.of(photoFile).size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT).toFile(thumbnailFile);
+			temp.delete();
 			return true;
-		} catch (IOException e) {
-			LOG.log(Level.WARNING, "Can't create thumbnails", e);
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Can't create thumbnails", e);
 			return false;
 		}
 	}
@@ -123,4 +127,9 @@ public class UploadedPhoto implements Serializable, PhotoModel {
 		remove();
 	}
 
+	@Override
+	public void rotate(int d) {
+		direction = (direction + d) % 4;
+		createThumbnails();
+	}
 }

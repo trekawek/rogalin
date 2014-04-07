@@ -20,4 +20,6 @@ public interface PhotoModel {
 	PhotoType getType();
 
 	DBObject getFileReferences() throws IOException;
+
+	void rotate(int degrees) throws IOException;
 }

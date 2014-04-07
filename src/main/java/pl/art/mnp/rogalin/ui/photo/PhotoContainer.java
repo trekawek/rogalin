@@ -27,10 +27,9 @@ import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
+@SuppressWarnings("serial")
 public class PhotoContainer extends VerticalLayout implements Receiver, FinishedListener, FailedListener,
 		ImageRemovedListener {
-
-	private static final long serialVersionUID = 4452654742708082982L;
 
 	private static final Logger LOG = Logger.getLogger(PhotoContainer.class.getName());
 
@@ -39,7 +38,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	private final Map<String, PhotoModel> images = new LinkedHashMap<String, PhotoModel>();
 
 	private final Map<String, UploadedPhoto> tempImages = new LinkedHashMap<String, UploadedPhoto>();
-	
+
 	private final Upload upload;
 
 	private Map<String, PhotoComponent> components;
@@ -146,7 +145,7 @@ public class PhotoContainer extends VerticalLayout implements Receiver, Finished
 	@Override
 	public void uploadFinished(FinishedEvent event) {
 		UploadedPhoto photo = tempImages.remove(event.getFilename());
-		if (photo.createThumbnails()) {
+		if (photo != null && photo.createThumbnails()) {
 			images.put(photo.getFileName(), photo);
 			updateImages();
 		} else {

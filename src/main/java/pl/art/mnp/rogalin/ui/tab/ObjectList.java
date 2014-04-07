@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.vaadin.dialogs.ConfirmDialog;
@@ -38,9 +37,8 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Runo;
 
+@SuppressWarnings("serial")
 public class ObjectList extends VerticalLayout implements Handler, PredicateListener {
-
-	private static final Logger LOG = Logger.getLogger(ObjectList.class.getName());
 
 	private static final Action PREVIEW = new Action("Zobacz");
 
@@ -196,7 +194,6 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	}
 
 	public void refreshTable() {
-		LOG.info("refresh table invoked");
 		table.removeAllItems();
 		Collection<DBObject> objects;
 		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
@@ -276,7 +273,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			return;
 		}
 		removeAllComponents();
-		addComponent(getButtons(object));
+		addComponent(getPreviewButtons(object));
 
 		ObjectPreview preview = new ObjectPreview(object);
 		addComponent(preview);
@@ -287,7 +284,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			return;
 		}
 		removeAllComponents();
-		addComponent(getButtons(object));
+		addComponent(getEditButtons(object));
 
 		ObjectForm objectForm = new ObjectForm(new SaveActionListener() {
 			private static final long serialVersionUID = 8084094197862972496L;
@@ -338,13 +335,33 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		void showAll();
 	}
 
-	private Component getButtons(DBObject object) {
+	private Component getEditButtons(DBObject object) {
 		HorizontalLayout layout = new HorizontalLayout();
 
 		Button back = new Button("Powrót do listy");
 		back.addClickListener(showTable);
 		layout.addComponent(back);
 		layout.addComponent(getPrintButton(object));
+
+		return layout;
+	}
+
+	private Component getPreviewButtons(final DBObject object) {
+		HorizontalLayout layout = new HorizontalLayout();
+
+		Button back = new Button("Powrót do listy");
+		back.addClickListener(showTable);
+		layout.addComponent(back);
+		layout.addComponent(getPrintButton(object));
+
+		Button edit = new Button("Edytuj");
+		edit.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				showEditView(object);
+			}
+		});
+		layout.addComponent(edit);
 
 		return layout;
 	}

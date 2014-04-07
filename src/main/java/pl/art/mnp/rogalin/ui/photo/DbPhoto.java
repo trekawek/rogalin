@@ -1,5 +1,6 @@
 package pl.art.mnp.rogalin.ui.photo;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,5 +108,34 @@ public class DbPhoto implements PhotoModel, Serializable {
 		Thumbnails.of(photoFile.getInputStream())
 				.size(UploadedPhoto.THUMBNAIL_WIDTH, UploadedPhoto.THUMBNAIL_HEIGHT).toOutputStream(os);
 		os.close();
+	}
+
+	@Override
+	public void rotate(int degrees) throws IOException {
+		GridFS gridFS = DbConnection.getInstance().getGridFS();
+		GridFSDBFile oldPhoto = gridFS.find(photoId);
+
+		String contentType = oldPhoto.getContentType();
+		File temp = File.createTempFile("rogalin_photo", fileName);
+		Thumbnails.of(oldPhoto.getInputStream()).scale(1).rotate(degrees * 90).toFile(temp);
+		gridFS.remove(photoId);
+		gridFS.remove(thumbnailId);
+
+		GridFSInputFile newPhoto = gridFS.createFile(temp);
+		newPhoto.setFilename(fileName);
+		newPhoto.setContentType(contentType);
+		newPhoto.setId(photoId);
+		newPhoto.save();
+
+		GridFSInputFile newThumbnail = gridFS.createFile();
+		newThumbnail.setFilename("thumb_" + fileName);
+		newThumbnail.setContentType(contentType);
+		newThumbnail.setId(thumbnailId);
+		OutputStream os = newThumbnail.getOutputStream();
+		Thumbnails.of(temp).size(UploadedPhoto.THUMBNAIL_WIDTH, UploadedPhoto.THUMBNAIL_HEIGHT)
+				.toOutputStream(os);
+		os.close();
+
+		temp.delete();
 	}
 }
