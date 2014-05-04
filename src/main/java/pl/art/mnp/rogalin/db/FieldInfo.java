@@ -224,7 +224,7 @@ public enum FieldInfo {
 
 	private FieldInfo(String label, boolean required, boolean searchable, FieldInfo dependsOn) {
 		this.label = label;
-		this.required = required;
+		this.required = false;
 		this.dependsOn = dependsOn;
 		this.searchable = searchable;
 	}
