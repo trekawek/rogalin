@@ -15,7 +15,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class ObjectPreview extends VerticalLayout {
 
-	private static final long serialVersionUID = 8078600605367926109L;
+	private static final long serialVersionUID = 8078600605367926111L;
 
 	public ObjectPreview(DBObject dbObject) {
 		super();
@@ -23,7 +23,9 @@ public class ObjectPreview extends VerticalLayout {
 		GridLayout columns = new GridLayout(2, 1);
 		columns.setSpacing(true);
 		FormLayout leftColumn = new FormLayout();
+		leftColumn.setWidth("400px");
 		FormLayout rightColumn = new FormLayout();
+		rightColumn.setWidth("400px");
 		FormLayout belowColumns = new FormLayout();
 		columns.addComponent(leftColumn, 0, 0);
 		columns.addComponent(rightColumn, 1, 0);
