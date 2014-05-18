@@ -141,12 +141,22 @@ public enum FieldInfo {
 			return new TextFieldType(this);
 		}
 	},
-	TEMPORARY_HOME("Tymczasowe miejsce przechowywania", false, true) {
+	/*TEMPORARY_HOME("Tymczasowe miejsce przechowywania", false, true) {
 		@Override
 		public FieldType getFieldType() {
 			return new TextFieldType(this);
 		}
-	},
+	},*/
+	CONTAINER_NO("Nr kontenera", false, true) {
+		@Override
+		public FieldType getFieldType() {
+			return new SelectFieldType(this);
+		}},
+	CONTAINER_SEGMENT("Część kontenera", false, true) {
+		@Override
+		public FieldType getFieldType() {
+			return new SelectFieldType(this);
+		}},
 	PARTS_NO("Ilość elementów składowych", false, true) {
 		@Override
 		public FieldType getFieldType() {

@@ -1,5 +1,6 @@
 package pl.art.mnp.rogalin.db;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,7 +11,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 6;
+	private static final int DB_VERSION = 7;
 
 	private DBCollection metadata;
 
@@ -63,6 +64,12 @@ public class DbUpdate {
 						collection.update(new BasicDBObject("_id", o.get("_id")), o);
 					}
 				}
+			}
+			if (i == 7) {
+				connection.getOptionsDao().saveOptions(FieldInfo.CONTAINER_NO,
+						Arrays.asList("1", "2", "3", "4", "5", "6"));
+				connection.getOptionsDao().saveOptions(FieldInfo.CONTAINER_SEGMENT,
+						Arrays.asList("a", "b", "c", "d"));
 			}
 			setVersion(i);
 		}

@@ -61,7 +61,7 @@ public class ObjectRenderer {
 		renderCell(FieldInfo.LOCATION, 2);
 		closeRow();
 		newRow();
-		renderCell(FieldInfo.TEMPORARY_HOME, 1, "Tymcz. miejsce");
+		renderContainerNo();
 		renderCell(FieldInfo.PARTS_NO, 1, "El. składowe");
 		renderCell(FieldInfo.PARTS_IN_PACKAGE, 1, "El. po spakowaniu");
 		closeRow();
@@ -116,6 +116,19 @@ public class ObjectRenderer {
 		} else {
 			builder.append(value);
 		}
+	}
+
+	private void renderContainerNo() {
+		builder.append("<td class=\"container_no\"><b>Kontener: </b>");
+		String containerNo = FieldInfo.CONTAINER_NO.getFieldType().getValue(dbObject);
+		String containerSegment = FieldInfo.CONTAINER_SEGMENT.getFieldType().getValue(dbObject);
+		if (StringUtils.isBlank(containerNo) && StringUtils.isBlank(containerSegment)) {
+			builder.append("-");
+		} else {
+			builder.append(StringUtils.defaultString(containerNo));
+			builder.append(StringUtils.defaultString(containerSegment));
+		}
+		builder.append("</td>");
 	}
 
 	@Override
