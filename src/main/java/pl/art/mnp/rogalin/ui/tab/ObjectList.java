@@ -10,12 +10,12 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.vaadin.dialogs.ConfirmDialog;
 
+import pl.art.mnp.rogalin.PathUtils;
 import pl.art.mnp.rogalin.TabsController.PredicateListener;
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
-import pl.art.mnp.rogalin.ui.print.PrintPage;
 
 import com.mongodb.DBObject;
 import com.vaadin.addon.tableexport.ExcelExport;
@@ -367,7 +367,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	}
 
 	private Button getPrintButton(DBObject dbObject) {
-		BrowserWindowOpener opener = new BrowserWindowOpener(PrintPage.class);
+		BrowserWindowOpener opener = new BrowserWindowOpener(PathUtils.getServletPath() + "/print");
 		opener.setParameter("objectId", dbObject.get("_id").toString());
 		opener.setFeatures("height=200,width=400,resizable");
 		Button print = new Button("Drukuj");

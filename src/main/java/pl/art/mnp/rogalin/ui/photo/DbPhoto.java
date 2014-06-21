@@ -47,6 +47,10 @@ public class DbPhoto implements PhotoModel, Serializable {
 		thumbnailFileName = gridFS.findOne(thumbnailId).getFilename();
 	}
 
+	public ObjectId getPhotoId() {
+		return photoId;
+	}
+
 	@Override
 	public PhotoType getType() {
 		return type;

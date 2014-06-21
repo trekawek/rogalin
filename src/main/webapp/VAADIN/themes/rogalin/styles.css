@@ -41,8 +41,12 @@ table.rendered_object evaluation_date {
 	text-align: right;
 }
 
-.photos-print img {
-	page-break-before: auto; /* 'always,' 'avoid,' 'left,' 'inherit,' or 'right' */
+.print-window img {
+	page-break-before: always; /* 'always,' 'avoid,' 'left,' 'inherit,' or 'right' */
 	page-break-after: auto; /* 'always,' 'avoid,' 'left,' 'inherit,' or 'right' */
 	page-break-inside: avoid; /* or 'auto' */
+}
+
+.print-window {
+	overflow: visible;
 }

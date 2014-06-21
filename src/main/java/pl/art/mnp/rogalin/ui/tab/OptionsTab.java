@@ -111,17 +111,6 @@ public class OptionsTab extends VerticalLayout {
 
 		newTextField = new TextField("Nowa wartość:");
 		formLayout.addComponent(newTextField);
-
-		// addComponent(new HorizontalSplitPanel());
-		// Button createThumbnails = new Button("Generuj miniatury");
-		// createThumbnails.setImmediate(true);
-		// createThumbnails.addClickListener(new Button.ClickListener() {
-		// @Override
-		// public void buttonClick(ClickEvent event) {
-		// generateThumbnails();
-		// }
-		// });
-		// addComponent(createThumbnails);
 	}
 
 	private void updateListSelect(boolean rememberSelection) {
