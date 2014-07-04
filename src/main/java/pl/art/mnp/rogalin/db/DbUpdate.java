@@ -1,6 +1,7 @@
 package pl.art.mnp.rogalin.db;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,7 +12,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 7;
+	private static final int DB_VERSION = 8;
 
 	private DBCollection metadata;
 
@@ -70,6 +71,20 @@ public class DbUpdate {
 						Arrays.asList("1", "2", "3", "4", "5", "6"));
 				connection.getOptionsDao().saveOptions(FieldInfo.CONTAINER_SEGMENT,
 						Arrays.asList("a", "b", "c", "d"));
+			}
+			if (i == 8) {
+				ManagementUtils.updateField(connection, FieldInfo.OTHER_DAMAGES, "zarysowania, wgniecenia",
+						"zarysowania");
+				OptionsDao optionsDao = connection.getOptionsDao();
+				List<String> options = optionsDao.getOptions(FieldInfo.OTHER_DAMAGES);
+				for (int j = 0; j < options.size(); j++) {
+					if ("zarysowania, wgniecenia".equals(options.get(j))) {
+						options.set(j, "zarysowania");
+						options.add(j + 1, "wgniecenia");
+						break;
+					}
+				}
+				optionsDao.saveOptions(FieldInfo.OTHER_DAMAGES, options);
 			}
 			setVersion(i);
 		}

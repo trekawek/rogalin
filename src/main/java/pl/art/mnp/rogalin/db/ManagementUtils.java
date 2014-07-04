@@ -99,4 +99,23 @@ public final class ManagementUtils {
 			System.out.println(" # " + objectIdentifier);
 		}
 	}
+
+	public static void updateField(DbConnection connection, FieldInfo field, String from, String to) {
+		DBCollection collection = connection.getMongoDb().getCollection("objects");
+		for (DBObject o : collection.find()) {
+			Object value = o.get(field.name());
+			if (value instanceof DBObject) {
+				@SuppressWarnings("unchecked")
+				List<String> values = (List<String>) ((DBObject) value).get("values");
+				for (int i = 0; i < values.size(); i++) {
+					String v = values.get(i);
+					values.set(i, v.replace(from, to));
+				}
+			} else {
+				value = ((String) value).replace(from, to);
+			}
+			o.put(field.name(), value);
+			collection.update(new BasicDBObject("_id", o.get("_id")), o);
+		}
+	}
 }
