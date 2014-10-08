@@ -30,6 +30,6 @@ public class ComboBoxFieldType extends AbstractFieldType {
 
 	@Override
 	public UiFieldType getSearchField() {
-		return new SelectUiFieldType(field, getOptions(), true, selectFirstItem);
+		return new SelectUiFieldType(field, getOptions(), true, selectFirstItem, false);
 	}
 }

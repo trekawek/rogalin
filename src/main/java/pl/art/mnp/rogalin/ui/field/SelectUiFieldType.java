@@ -1,38 +1,51 @@
 package pl.art.mnp.rogalin.ui.field;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.predicate.EqualsPredicate;
+import pl.art.mnp.rogalin.db.predicate.IsEmptyPredicate;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 
+@SuppressWarnings("serial")
 public class SelectUiFieldType extends AbstractUiFieldType {
 
-	private static final long serialVersionUID = -2001979428978218869L;
+	private static final String EMPTY = "<nie wybrano>";
 
 	private final ComboBox comboBox;
 
 	private final String defaultOption;
 
 	public SelectUiFieldType(FieldInfo field, List<String> options, boolean search) {
-		this(field, options, search, false);
+		this(field, options, search, false, false);
 	}
 
-	public SelectUiFieldType(FieldInfo field, List<String> options, boolean search, boolean selectFirstItem) {
+	public SelectUiFieldType(FieldInfo field, List<String> options, boolean search, boolean selectFirstItem,
+			boolean emptyAllowed) {
 		super(field);
-		comboBox = new ComboBox(null, options);
+		final List<String> selectOptions;
+		if (emptyAllowed && search) {
+			selectOptions = new ArrayList<String>();
+			selectOptions.add("<nie wybrano>");
+			selectOptions.addAll(options);
+		} else {
+			selectOptions = options;
+		}
+
+		comboBox = new ComboBox(null, selectOptions);
 		comboBox.setCaption(field.toString());
 		comboBox.setNewItemsAllowed(false);
 		comboBox.setTextInputAllowed(false);
 		comboBox.setPageLength(10);
 		if (search) {
 			comboBox.setNullSelectionAllowed(true);
-		} else {
+		} else if (!emptyAllowed) {
 			comboBox.setNullSelectionAllowed(false);
 			comboBox.setRequired(field.isRequired());
 		}
@@ -53,10 +66,14 @@ public class SelectUiFieldType extends AbstractUiFieldType {
 
 	@Override
 	public Predicate getPredicate() {
-		if (StringUtils.isEmpty((String) comboBox.getValue())) {
+		String value = (String) comboBox.getValue();
+		if (StringUtils.isEmpty(value)) {
 			return DUMMY_PREDICATE;
+		} else if (EMPTY.equals(value)) {
+			return new IsEmptyPredicate(fieldInfo.name());
+		} else {
+			return new EqualsPredicate(value, fieldInfo.name());
 		}
-		return new EqualsPredicate((String) comboBox.getValue(), fieldInfo.name());
 	}
 
 	@Override

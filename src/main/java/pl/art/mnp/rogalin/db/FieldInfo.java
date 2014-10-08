@@ -42,7 +42,7 @@ public enum FieldInfo {
 	TYPE("Dziedzina", true, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new SelectFieldType(this);
+			return new SelectFieldType(this, false);
 		}
 	},
 	TECHNIQUE("Technika", true, true) {
@@ -150,12 +150,12 @@ public enum FieldInfo {
 	CONTAINER_NO("Nr kontenera", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new SelectFieldType(this);
+			return new SelectFieldType(this, true);
 		}},
 	CONTAINER_SEGMENT("Część kontenera", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new SelectFieldType(this);
+			return new SelectFieldType(this, true);
 		}},
 	PARTS_NO("Ilość elementów składowych", false, true) {
 		@Override
@@ -172,13 +172,13 @@ public enum FieldInfo {
 	CONDITION("Stan obiektu", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new SelectFieldType(this);
+			return new SelectFieldType(this, false);
 		}
 	},
 	COMPLETENESS("Kompletność", false, true) {
 		@Override
 		public FieldType getFieldType() {
-			return new SelectFieldType(this);
+			return new SelectFieldType(this, false);
 		}
 	},
 	ELEMENT_ABSENCE("Brakujące elementy", false, true) {
