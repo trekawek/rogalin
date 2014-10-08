@@ -12,7 +12,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 8;
+	private static final int DB_VERSION = 9;
 
 	private DBCollection metadata;
 
@@ -86,6 +86,11 @@ public class DbUpdate {
 				}
 				optionsDao.saveOptions(FieldInfo.OTHER_DAMAGES, options);
 			}
+			if (i == 9) {
+				ManagementUtils.updateField(connection, FieldInfo.DEPARTMENT, "Malarstwo Obce",
+						"Malarstwo Europejskie");
+			}
+
 			setVersion(i);
 		}
 	}

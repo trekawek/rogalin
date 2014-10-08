@@ -111,8 +111,10 @@ public final class ManagementUtils {
 					String v = values.get(i);
 					values.set(i, v.replace(from, to));
 				}
-			} else {
+			} else if (value instanceof String) {
 				value = ((String) value).replace(from, to);
+			} else {
+				continue;
 			}
 			o.put(field.name(), value);
 			collection.update(new BasicDBObject("_id", o.get("_id")), o);
