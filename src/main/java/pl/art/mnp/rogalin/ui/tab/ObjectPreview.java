@@ -12,6 +12,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.Runo;
 
 public class ObjectPreview extends VerticalLayout {
 
@@ -55,6 +56,13 @@ public class ObjectPreview extends VerticalLayout {
 				container.addComponent(f.getFieldType().getPreviewField(dbObject));
 			}
 		}
+
+		addComponent(new FragmentList(dbObject, true));
+
+		Label label = new Label("Fotografie");
+		label.addStyleName(Runo.LABEL_H2);
+		label.setSizeUndefined();
+		addComponent(label);
 
 		VerticalLayout photos = new VerticalLayout();
 		photos.setSpacing(true);

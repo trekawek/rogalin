@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import pl.art.mnp.rogalin.PathUtils;
@@ -17,6 +19,8 @@ import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.ObjectsDao;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.vaadin.addon.tableexport.ExcelExport;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -29,6 +33,7 @@ import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -48,6 +53,8 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	private static final Action[] ACTIONS = new Action[] { PREVIEW, EDIT, REMOVE };
 
+	private static final Action[] ACTIONS_WITHOUT_REMOVE = new Action[] { PREVIEW, EDIT };
+
 	private static final Set<FieldInfo> VISIBLE_COLUMNS = EnumSet.of(FieldInfo.IDENTIFIER, FieldInfo.NAME,
 			FieldInfo.TYPE, FieldInfo.EVALUATION_DATE);
 
@@ -66,6 +73,12 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	private String query;
 
 	private Table table;
+
+	private List<ObjectId> objectIds;
+
+	private Set<Integer> fragmentIndices;
+
+	private boolean showFragments = true;
 
 	public ObjectList() {
 		super();
@@ -115,6 +128,15 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				filterResults(searchText.getValue());
 			}
 		});
+		final CheckBox showFragmentsCheckbox = new CheckBox("Pokaż fragmenty");
+		showFragmentsCheckbox.setValue(true);
+		showFragmentsCheckbox.addValueChangeListener(new ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				showFragments = (Boolean) event.getProperty().getValue();
+				refreshTable();
+			}
+		});
 		Button resetSearch = new Button("Pokaż wszystkie");
 		resetSearch.addClickListener(new ClickListener() {
 			private static final long serialVersionUID = 934242241334057589L;
@@ -141,7 +163,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		});
 
 		filterInfo = new Label("");
-		layout.addComponents(searchText, searchButton, resetSearch, excel, filterInfo);
+		layout.addComponents(searchText, searchButton, resetSearch, showFragmentsCheckbox, excel, filterInfo);
 		return layout;
 	}
 
@@ -179,8 +201,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			@Override
 			public void itemClick(ItemClickEvent event) {
 				if (event.isDoubleClick()) {
-					DBObject object = DbConnection.getInstance().getObjectsDao().getObject(event.getItemId());
-					showPreview(object);
+					showPreview(getObjectByIndex((Integer) event.getItemId()));
 				}
 			}
 		});
@@ -195,23 +216,65 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	public void refreshTable() {
 		table.removeAllItems();
-		Collection<DBObject> objects;
+		Collection<DBObject> objectList;
 		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
 		if (StringUtils.isEmpty(query)) {
-			objects = objectDao.getObjectList();
+			objectList = objectDao.getObjectList();
 		} else {
-			objects = objectDao.getFilteredObjectList(query);
+			objectList = objectDao.getFilteredObjectList(query);
 		}
+		if (showFragments) {
+			objectList = enhanceWithFragments(objectList);
+		}
+
 		int i = 0;
-		for (DBObject o : objects) {
+		objectIds = new ArrayList<ObjectId>();
+		fragmentIndices = new HashSet<Integer>();
+		for (DBObject o : objectList) {
 			if ((predicates == null && matchesDefaultPredicates(o))
 					|| (predicates != null && matchesPredicates(o))) {
-				i++;
-				table.addItem(createTableRow(o), o.get("_id"));
+				objectIds.add((ObjectId) o.get("_id"));
+				Object[] row = createTableRow(o);
+				if (o.containsField("isFragment")) {
+					fragmentIndices.add(i);
+				}
+				table.addItem(row, i++);
 			}
 		}
 		filterInfo.setValue(String.format("Ilość rezultatów: %d. %s", i, predicates == null ? ""
 				: "Wyniki podlegają filtrowaniu."));
+	}
+
+	private List<DBObject> enhanceWithFragments(Collection<DBObject> objects) {
+		List<DBObject> list = new ArrayList<DBObject>();
+		for (DBObject o : objects) {
+			list.add(o);
+			list.addAll(getFragments(o));
+		}
+		return list;
+	}
+
+	private List<DBObject> getFragments(DBObject parent) {
+		List<DBObject> fragmentList = new ArrayList<DBObject>();
+
+		DBObject fragments = (DBObject) parent.get("fragments");
+		if (fragments == null) {
+			return fragmentList;
+		}
+
+		BasicDBList list = (BasicDBList) fragments.get("items");
+		for (Object rawObject : list) {
+			DBObject fragment = (DBObject) rawObject;
+			DBObject newItem = new BasicDBObject(parent.toMap());
+			String newName = String
+					.format("%s (%s)", parent.get(FieldInfo.NAME.name()), fragment.get("name"));
+			newItem.put(FieldInfo.NAME.name(), newName);
+			newItem.put(FieldInfo.CONTAINER_NO.name(), fragment.get(FieldInfo.CONTAINER_NO.name()));
+			newItem.put(FieldInfo.CONTAINER_SEGMENT.name(), fragment.get(FieldInfo.CONTAINER_SEGMENT.name()));
+			newItem.put("isFragment", true);
+			fragmentList.add(newItem);
+		}
+		return fragmentList;
 	}
 
 	private boolean matchesDefaultPredicates(DBObject o) {
@@ -251,13 +314,17 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	@Override
 	public Action[] getActions(Object target, Object sender) {
-		return ACTIONS;
+		if (fragmentIndices.contains(target)) {
+			return ACTIONS_WITHOUT_REMOVE;
+		} else {
+			return ACTIONS;
+		}
 	}
 
 	@Override
 	public void handleAction(Action action, Object sender, Object target) {
 		if (sender == table) {
-			DBObject object = DbConnection.getInstance().getObjectsDao().getObject(target);
+			DBObject object = getObjectByIndex((Integer) target);
 			if (action == PREVIEW) {
 				showPreview(object);
 			} else if (action == EDIT) {
@@ -266,6 +333,11 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				remove(object);
 			}
 		}
+	}
+
+	private DBObject getObjectByIndex(int index) {
+		ObjectId id = objectIds.get(index);
+		return DbConnection.getInstance().getObjectsDao().getObject(id);
 	}
 
 	private void showPreview(DBObject object) {

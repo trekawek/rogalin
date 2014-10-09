@@ -65,10 +65,11 @@ public class ObjectsDao {
 		return collection.findOne(ref);
 	}
 
-	public void addObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos) {
+	public DBObject addObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos) {
 		DBObject object = createDbObjectFromFields(fields, photos);
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.insert(object);
+		return object;
 	}
 
 	private DBObject createDbObjectFromFields(Map<FieldInfo, UiFieldType> fields, BasicDBList photos) {
@@ -80,10 +81,17 @@ public class ObjectsDao {
 		return object;
 	}
 
-	public void updateObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos, ObjectId id) {
+	public DBObject updateObject(Map<FieldInfo, UiFieldType> fields, BasicDBList photos, ObjectId id) {
 		DBObject newObject = createDbObjectFromFields(fields, photos);
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
 		collection.update(new BasicDBObject("_id", id), newObject);
+		return newObject;
+	}
+
+	public DBObject updateObject(DBObject dbObject, ObjectId id) {
+		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
+		collection.update(new BasicDBObject("_id", id), dbObject);
+		return dbObject;
 	}
 
 	@SuppressWarnings("unchecked")

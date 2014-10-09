@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 import pl.art.mnp.rogalin.db.FieldInfo;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 
 public class ObjectRenderer {
@@ -65,6 +66,16 @@ public class ObjectRenderer {
 		renderCell(FieldInfo.PARTS_NO, 1, "El. składowe");
 		renderCell(FieldInfo.PARTS_IN_PACKAGE, 1, "El. po spakowaniu");
 		closeRow();
+
+		if (dbObject.containsField("fragments")) {
+			DBObject fragments = (DBObject) dbObject.get("fragments");
+			BasicDBList list = (BasicDBList) fragments.get("items");
+			for (Object rawObject : list) {
+				DBObject o = (DBObject) rawObject;
+				renderFragment(o);
+			}
+		}
+
 		newRow();
 		renderCell(FieldInfo.DEPARTMENT, 1);
 		renderCell(FieldInfo.CONDITION, 1);
@@ -85,7 +96,19 @@ public class ObjectRenderer {
 		newRow();
 		renderCell(FieldInfo.DESC, 3);
 		closeRow();
+
 		builder.append("</table>");
+	}
+
+	private void renderFragment(DBObject o) {
+		newRow();
+		builder.append("<td colspan=\"1\"><b>Kontener: </b>");
+		builder.append(o.get(FieldInfo.CONTAINER_NO.name()));
+		builder.append(o.get(FieldInfo.CONTAINER_SEGMENT.name()));
+		builder.append(" - ");
+		builder.append(o.get("name"));
+		builder.append("</td>");
+		closeRow();
 	}
 
 	private void newRow() {

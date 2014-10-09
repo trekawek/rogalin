@@ -25,15 +25,17 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.themes.Runo;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.VerticalLayout;
 
 public class ObjectForm extends VerticalLayout {
 
-	private static final long serialVersionUID = 4289893965280993486L;
+	private static final long serialVersionUID = 4289893965280993484L;
 
 	private final Map<FieldInfo, UiFieldType> fields = new LinkedHashMap<FieldInfo, UiFieldType>();
 
@@ -45,11 +47,12 @@ public class ObjectForm extends VerticalLayout {
 
 	private final DBObject editedObject;
 
+	private final FragmentList fragmentList;
+
 	public ObjectForm(SaveActionListener saveAction) {
 		this(saveAction, null);
 	}
 
-	@SuppressWarnings("serial")
 	public ObjectForm(SaveActionListener saveAction, DBObject object) {
 		super();
 		this.editedObject = object;
@@ -97,11 +100,21 @@ public class ObjectForm extends VerticalLayout {
 		}
 		setDependencies();
 
+		fragmentList = new FragmentList(object, false);
+		addComponent(fragmentList);
+
 		photoContainer = new PhotoContainer(object);
 		addComponent(photoContainer);
 
+		Label label = new Label("Zapisz obiekt");
+		label.addStyleName(Runo.LABEL_H2);
+		label.setSizeUndefined();
+		addComponent(label);
+
 		Button button = new Button("Zapisz obiekt");
 		button.addClickListener(new ClickListener() {
+			private static final long serialVersionUID = -3015843914719490817L;
+
 			@Override
 			public void buttonClick(ClickEvent event) {
 				saveObject();
@@ -144,11 +157,15 @@ public class ObjectForm extends VerticalLayout {
 		}
 		BasicDBList photos = photoContainer.serializePhotos();
 		ObjectsDao dao = DbConnection.getInstance().getObjectsDao();
+		DBObject savedObject;
 		if (editedObject == null) {
-			dao.addObject(fields, photos);
+			savedObject = dao.addObject(fields, photos);
 		} else {
-			dao.updateObject(fields, photos, (ObjectId) editedObject.get("_id"));
+			savedObject = dao.updateObject(fields, photos, (ObjectId) editedObject.get("_id"));
 		}
+		savedObject.put("fragments", fragmentList.getFragments());
+		dao.updateObject(savedObject, (ObjectId) editedObject.get("_id"));
+
 		Notification.show("Zapisano obiekt", Type.HUMANIZED_MESSAGE);
 		saveAction.onSaveAction();
 		for (UiFieldType field : fields.values()) {
