@@ -215,6 +215,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	}
 
 	public void refreshTable() {
+		int firstItemIndex = table.getCurrentPageFirstItemIndex();
 		table.removeAllItems();
 		Collection<DBObject> objectList;
 		ObjectsDao objectDao = DbConnection.getInstance().getObjectsDao();
@@ -241,6 +242,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 				table.addItem(row, i++);
 			}
 		}
+		table.setCurrentPageFirstItemIndex(firstItemIndex);
 		filterInfo.setValue(String.format("Ilość rezultatów: %d. %s", i, predicates == null ? ""
 				: "Wyniki podlegają filtrowaniu."));
 	}
