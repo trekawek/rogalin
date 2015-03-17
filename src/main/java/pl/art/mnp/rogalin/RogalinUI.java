@@ -18,6 +18,8 @@ import com.vaadin.ui.themes.Runo;
 // @PreserveOnRefresh
 public class RogalinUI extends UI {
 
+	public static final boolean READONLY = Boolean.getBoolean("readonly");
+
 	private static final long serialVersionUID = 1551053978627338819L;
 
 	@Override

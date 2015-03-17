@@ -13,6 +13,7 @@ import org.bson.types.ObjectId;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import pl.art.mnp.rogalin.PathUtils;
+import pl.art.mnp.rogalin.RogalinUI;
 import pl.art.mnp.rogalin.TabsController.PredicateListener;
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
@@ -50,6 +51,8 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	private static final Action EDIT = new Action("Edytuj");
 
 	private static final Action REMOVE = new Action("Usuń");
+
+	private static final Action[] ACTIONS_READONLY = new Action[] { PREVIEW };
 
 	private static final Action[] ACTIONS = new Action[] { PREVIEW, EDIT, REMOVE };
 
@@ -316,7 +319,9 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 
 	@Override
 	public Action[] getActions(Object target, Object sender) {
-		if (fragmentIndices.contains(target)) {
+		if (RogalinUI.READONLY) {
+			return ACTIONS_READONLY;
+		} else if (fragmentIndices.contains(target)) {
 			return ACTIONS_WITHOUT_REMOVE;
 		} else {
 			return ACTIONS;

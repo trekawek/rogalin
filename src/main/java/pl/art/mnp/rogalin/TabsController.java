@@ -35,9 +35,13 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 	public TabsController() {
 		tabs = new TabSheet();
 		tabs.addTab(listTab = createListTab(), "Obiekty");
-		tabs.addTab(newObjectTab = createNewObjectTab(), "Dodaj nowy");
+		if (!RogalinUI.READONLY) {
+			tabs.addTab(newObjectTab = createNewObjectTab(), "Dodaj nowy");
+		}
 		tabs.addTab(searchTab = createSearchTab(), "Wyszukaj");
-		tabs.addTab(optionsTab = createOptionsTab(), "Kategorie");
+		if (!RogalinUI.READONLY) {
+			tabs.addTab(optionsTab = createOptionsTab(), "Kategorie");
+		}
 		listTab.setShowAllListener(searchTab);
 		tabs.addSelectedTabChangeListener(this);
 	}

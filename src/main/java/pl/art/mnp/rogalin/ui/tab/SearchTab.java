@@ -8,6 +8,7 @@ import pl.art.mnp.rogalin.TabsController.PredicateListener;
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.predicate.DummyPredicate;
+import pl.art.mnp.rogalin.db.predicate.IsEmptyPredicate;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 import pl.art.mnp.rogalin.field.FieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
@@ -37,6 +38,8 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 	private final CheckBox noHistoricPhotoCheckbox;
 
 	private final CheckBox noCurrentPhotoCheckbox;
+
+	private CheckBox noIdentifier;
 
 	public SearchTab(PredicateListener predicateListener) {
 		super();
@@ -92,6 +95,11 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 				container = rightColumn;
 			}
 			container.addComponent(formField.getComponent());
+
+			if (f == FieldInfo.IDENTIFIER) {
+				noIdentifier = new CheckBox("Obiekty bez numeru inwentarzowego");
+				container.addComponent(noIdentifier);
+			}
 		}
 		noCurrentPhotoCheckbox = new CheckBox("Obiekty bez fotografii bieżącej");
 		noHistoricPhotoCheckbox = new CheckBox("Obiekty bez fotografii archiwalnej");
@@ -113,12 +121,16 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 		if (noHistoricPhotoCheckbox.getValue()) {
 			predicates.add(new NoPhotoPredicate(PhotoType.HISTORIC));
 		}
+		if (noIdentifier.getValue()) {
+			predicates.add(new IsEmptyPredicate(FieldInfo.IDENTIFIER.name()));
+		}
 		predicateListener.gotPredicates(predicates);
 	}
 
 	private void clear() {
 		noCurrentPhotoCheckbox.setValue(false);
 		noHistoricPhotoCheckbox.setValue(false);
+		noIdentifier.setValue(false);
 		for (UiFieldType field : fields) {
 			field.clear();
 		}
