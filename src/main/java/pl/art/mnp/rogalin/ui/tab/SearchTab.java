@@ -8,7 +8,7 @@ import pl.art.mnp.rogalin.TabsController.PredicateListener;
 import pl.art.mnp.rogalin.db.DbConnection;
 import pl.art.mnp.rogalin.db.FieldInfo;
 import pl.art.mnp.rogalin.db.predicate.DummyPredicate;
-import pl.art.mnp.rogalin.db.predicate.IsEmptyPredicate;
+import pl.art.mnp.rogalin.db.predicate.NoIdentifierPredicate;
 import pl.art.mnp.rogalin.db.predicate.Predicate;
 import pl.art.mnp.rogalin.field.FieldType;
 import pl.art.mnp.rogalin.ui.field.UiFieldType;
@@ -97,7 +97,7 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 			container.addComponent(formField.getComponent());
 
 			if (f == FieldInfo.IDENTIFIER) {
-				noIdentifier = new CheckBox("Obiekty bez numeru inwentarzowego");
+				noIdentifier = new CheckBox("Obiekty bez poprawnego numeru inwentarzowego");
 				container.addComponent(noIdentifier);
 			}
 		}
@@ -122,7 +122,7 @@ public class SearchTab extends VerticalLayout implements ShowAllListener {
 			predicates.add(new NoPhotoPredicate(PhotoType.HISTORIC));
 		}
 		if (noIdentifier.getValue()) {
-			predicates.add(new IsEmptyPredicate(FieldInfo.IDENTIFIER.name()));
+			predicates.add(new NoIdentifierPredicate());
 		}
 		predicateListener.gotPredicates(predicates);
 	}
