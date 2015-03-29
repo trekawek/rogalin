@@ -59,6 +59,9 @@ public class TabsController implements Serializable, SelectedTabChangeListener {
 
 	@Override
 	public void selectedTabChange(SelectedTabChangeEvent event) {
+		if (RogalinUI.READONLY) {
+			return;
+		}
 		if (previousSelectedTab == optionsTab) {
 			tabs.replaceComponent(newObjectTab, newObjectTab = createNewObjectTab());
 			tabs.replaceComponent(searchTab, searchTab = createSearchTab());

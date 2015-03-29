@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -119,5 +121,17 @@ public final class ManagementUtils {
 			o.put(field.name(), value);
 			collection.update(new BasicDBObject("_id", o.get("_id")), o);
 		}
+	}
+
+	public static void updateDepartment(DbConnection connection, String from, String to) {
+		updateField(connection, FieldInfo.DEPARTMENT, from, to);
+		List<String> departments = connection.getOptionsDao().getOptions(FieldInfo.DEPARTMENT);
+		for (int i = 0; i < departments.size(); i++) {
+			if (from.equals(departments.get(i))) {
+				departments.set(i, to);
+			}
+		}
+		departments = new ArrayList<String>(new LinkedHashSet<String>(departments));
+		connection.getOptionsDao().saveOptions(FieldInfo.DEPARTMENT, departments);
 	}
 }

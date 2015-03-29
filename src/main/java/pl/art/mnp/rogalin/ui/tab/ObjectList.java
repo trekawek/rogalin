@@ -433,14 +433,16 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		layout.addComponent(back);
 		layout.addComponent(getPrintButton(object));
 
-		Button edit = new Button("Edytuj");
-		edit.addClickListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				showEditView(object);
-			}
-		});
-		layout.addComponent(edit);
+		if (!RogalinUI.READONLY) {
+			Button edit = new Button("Edytuj");
+			edit.addClickListener(new ClickListener() {
+				@Override
+				public void buttonClick(ClickEvent event) {
+					showEditView(object);
+				}
+			});
+			layout.addComponent(edit);
+		}
 
 		return layout;
 	}

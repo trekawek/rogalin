@@ -16,7 +16,6 @@ import pl.art.mnp.rogalin.ui.photo.DbPhoto;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFS;
@@ -39,20 +38,16 @@ public class ObjectsDao {
 	}
 
 	public Collection<DBObject> getFilteredObjectList(String query) {
+		final DBObject search = new BasicDBObject("$search", "\"" + query + "\"");
+		final DBObject textSearch = new BasicDBObject("$text", search);
+
 		DBCollection collection = dbProvider.getMongoDb().getCollection(OBJECTS);
-		final DBObject textSearchCommand = new BasicDBObject();
-		textSearchCommand.put("text", OBJECTS);
-		textSearchCommand.put("search", String.format("\"%s\"", query));
-		textSearchCommand.put("project", new BasicDBObject("_id", 1));
-		final CommandResult commandResult = dbProvider.getMongoDb().command(textSearchCommand);
-		@SuppressWarnings("unchecked")
-		List<DBObject> list = (List<DBObject>) commandResult.get("results");
+		List<DBObject> list = collection.find(textSearch).toArray();
 		Map<ObjectId, DBObject> result = new TreeMap<ObjectId, DBObject>();
 		if (list != null) {
 			for (DBObject o : list) {
-				ObjectId id = (ObjectId) ((DBObject) o.get("obj")).get("_id");
-				DBObject object = collection.findOne(new BasicDBObject("_id", id));
-				result.put(id, object);
+				ObjectId id = (ObjectId) o.get("_id");
+				result.put(id, o);
 			}
 		}
 		return result.values();

@@ -12,7 +12,7 @@ import com.mongodb.DBObject;
 public class DbUpdate {
 	private static final Logger LOG = Logger.getLogger(DbUpdate.class.getName());
 
-	private static final int DB_VERSION = 9;
+	private static final int DB_VERSION = 10;
 
 	private DBCollection metadata;
 
@@ -89,6 +89,18 @@ public class DbUpdate {
 			if (i == 9) {
 				ManagementUtils.updateField(connection, FieldInfo.DEPARTMENT, "Malarstwo Obce",
 						"Malarstwo Europejskie");
+			}
+			if (i == 10) {
+				ManagementUtils.updateDepartment(connection, "Sztuka Polska XVI-XVIII w.", "Galeria Sztuki Polskiej od XVI do XVIII w.");
+				ManagementUtils.updateDepartment(connection, "Malarstwo Polskie XIX i XX w.", "Galeria Sztuki Polskiej od końca XVIII w. do 1945 roku");
+				ManagementUtils.updateDepartment(connection, "Rzeźba Polska od XIX w.-1939 r.", "Galeria Sztuki Polskiej od końca XVIII w. do 1945 roku");
+				ManagementUtils.updateDepartment(connection, "Malarstwo Europejskie", "Galeria Sztuki Europejskiej");
+				ManagementUtils.updateDepartment(connection, "Rzeźba Obca od XIX w.-1939 r.", "Galeria Sztuki Europejskiej");
+				ManagementUtils.updateDepartment(connection, "Malarstwo Współczesne (po 1945 r.)", "Galeria Sztuki Współczesnej");
+				ManagementUtils.updateDepartment(connection, "Rzeźba Współczesna (po 1939 r.)", "Galeria Sztuki Współczesnej");
+				ManagementUtils.updateDepartment(connection, "Rzemiosło Artystyczne", "Muzeum Sztuk Użytkowych");
+				//ManagementUtils.updateDepartment(connection, "Muzeum Instrumentów Muzycznych", "Muzeum Instrumentów Muzycznych");
+				//ManagementUtils.updateDepartment(connection, "Gabinet Rycin", "Gabinet Rycin");
 			}
 
 			setVersion(i);
