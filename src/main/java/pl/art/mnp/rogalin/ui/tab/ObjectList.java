@@ -204,7 +204,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			@Override
 			public void itemClick(ItemClickEvent event) {
 				if (event.isDoubleClick()) {
-					showPreview(getObjectByIndex((Integer) event.getItemId()));
+					showPreview((Integer) event.getItemId());
 				}
 			}
 		});
@@ -331,13 +331,13 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 	@Override
 	public void handleAction(Action action, Object sender, Object target) {
 		if (sender == table) {
-			DBObject object = getObjectByIndex((Integer) target);
+			final int index = (Integer) target;
 			if (action == PREVIEW) {
-				showPreview(object);
+				showPreview(index);
 			} else if (action == EDIT) {
-				showEditView(object);
+				showEditView(index);
 			} else if (action == REMOVE) {
-				remove(object);
+				remove(index);
 			}
 		}
 	}
@@ -347,18 +347,20 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		return DbConnection.getInstance().getObjectsDao().getObject(id);
 	}
 
-	private void showPreview(DBObject object) {
+	private void showPreview(int index) {
+		final DBObject object = getObjectByIndex(index);
 		if (object == null) {
 			return;
 		}
 		removeAllComponents();
-		addComponent(getPreviewButtons(object));
+		addComponent(getPreviewButtons(object, index));
 
 		ObjectPreview preview = new ObjectPreview(object);
 		addComponent(preview);
 	}
 
-	private void showEditView(DBObject object) {
+	private void showEditView(int index) {
+		final DBObject object = getObjectByIndex(index);
 		if (object == null) {
 			return;
 		}
@@ -378,7 +380,8 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		addComponent(objectForm);
 	}
 
-	private void remove(final DBObject object) {
+	private void remove(int index) {
+		final DBObject object = getObjectByIndex(index);
 		ConfirmDialog.show(this.getUI(), "Potwierdzenie", "Czy na pewno chcesz usunąć ten obiekt?", "OK",
 				"Anuluj", new ConfirmDialog.Listener() {
 					private static final long serialVersionUID = -3518627734961298673L;
@@ -425,7 +428,7 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 		return layout;
 	}
 
-	private Component getPreviewButtons(final DBObject object) {
+	private Component getPreviewButtons(final DBObject object, final int index) {
 		HorizontalLayout layout = new HorizontalLayout();
 
 		Button back = new Button("Powrót do listy");
@@ -438,11 +441,34 @@ public class ObjectList extends VerticalLayout implements Handler, PredicateList
 			edit.addClickListener(new ClickListener() {
 				@Override
 				public void buttonClick(ClickEvent event) {
-					showEditView(object);
+					showEditView(index);
 				}
 			});
 			layout.addComponent(edit);
 		}
+
+		Button prev = new Button("<<");
+		prev.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				showPreview(index - 1);
+			}
+		});
+		if (index <= 0) {
+			prev.setEnabled(false);
+		}
+		Button next = new Button(">>");
+		next.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				showPreview(index + 1);
+			}
+		});
+		if (index >= (objectIds.size() - 1)) {
+			next.setEnabled(false);
+		}
+		layout.addComponent(prev);
+		layout.addComponent(next);
 
 		return layout;
 	}
